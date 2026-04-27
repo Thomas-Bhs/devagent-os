@@ -1,3 +1,5 @@
+import type { ThemeConfig } from '../theme';
+
 export const falloutTheme: ThemeConfig = {
   id: 'fallout',
   name: 'Fallout',
