@@ -1,19 +1,17 @@
 import { useEffect, useRef } from 'react';
 import { Message } from '@ai-sdk/react';
+import { useTheme } from '@/app/context/ThemeContext';
+import { formatLabel } from '@/app/lib/theme';
 import MessageBubble from './MessageBubble';
-import type { Theme } from '@/app/lib/theme';
-import { themes } from '@/app/lib/theme';
 
 interface ChatMessagesProps {
   messages: Message[];
   isLoading: boolean;
-  theme: Theme;
 }
 
-export default function ChatMessages({ messages, isLoading, theme }: ChatMessagesProps) {
+export default function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
-  const t = themes[theme];
-  const isFallout = theme === 'fallout';
+  const { t } = useTheme();
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -25,19 +23,19 @@ export default function ChatMessages({ messages, isLoading, theme }: ChatMessage
         <div
           className='w-16 h-16 rounded-3xl flex items-center justify-center'
           style={{
-            background: isFallout ? `${t.border}20` : '#0f0f1a',
-            border: isFallout ? `1px solid ${t.border}` : 'none',
+            background: t.userBubbleBg,
+            border: `1px solid ${t.border}`,
           }}
         >
           <svg width='28' height='28' viewBox='0 0 28 28' fill='none'>
-            <rect x='3' y='3' width='9' height='9' rx='2.5' fill={isFallout ? t.border : 'white'} />
+            <rect x='3' y='3' width='9' height='9' rx='2.5' fill={t.userBubbleText} />
             <rect
               x='16'
               y='3'
               width='9'
               height='9'
               rx='2.5'
-              fill={isFallout ? t.border : 'white'}
+              fill={t.userBubbleText}
               fillOpacity='0.5'
             />
             <rect
@@ -46,7 +44,7 @@ export default function ChatMessages({ messages, isLoading, theme }: ChatMessage
               width='9'
               height='9'
               rx='2.5'
-              fill={isFallout ? t.border : 'white'}
+              fill={t.userBubbleText}
               fillOpacity='0.5'
             />
             <rect
@@ -55,31 +53,25 @@ export default function ChatMessages({ messages, isLoading, theme }: ChatMessage
               width='9'
               height='9'
               rx='2.5'
-              fill={isFallout ? t.border : 'white'}
+              fill={t.userBubbleText}
               fillOpacity='0.3'
             />
           </svg>
         </div>
         <div>
-          <p
-            className='text-sm font-bold mb-1'
-            style={{
-              color: isFallout ? t.border : t.text,
-              fontFamily: isFallout ? 'monospace' : 'inherit',
-            }}
-          >
-            {isFallout ? '> SYSTEM READY_' : 'Ready to code'}
+          <p className='text-sm font-bold mb-1' style={{ color: t.text, fontFamily: t.fontFamily }}>
+            {formatLabel(t, 'Ready to code')}
           </p>
           <p
             className='text-xs max-w-xs leading-relaxed'
-            style={{ color: t.textSecondary, fontFamily: isFallout ? 'monospace' : 'inherit' }}
+            style={{ color: t.textSecondary, fontFamily: t.fontFamily }}
           >
-            {isFallout
-              ? '> Select an agent and initialize the sequence_'
+            {t.labelPrefix
+              ? formatLabel(t, 'Select an agent and initialize the sequence')
               : 'Select an agent and ask your first question, or upload a file to analyze.'}
           </p>
         </div>
-        {!isFallout && (
+        {!t.labelPrefix && (
           <div className='flex gap-2 flex-wrap justify-center'>
             {['Create a React hook', 'Debug my code', 'Generate tests'].map((suggestion) => (
               <button
@@ -104,13 +96,11 @@ export default function ChatMessages({ messages, isLoading, theme }: ChatMessage
           role={m.role === 'user' ? 'user' : 'assistant'}
           content={typeof m.content === 'string' ? m.content : ''}
           agentName='Agent Dev'
-          agentColor='bg-gray-950 text-white'
-          toolInvocations={m.toolInvocations?.map((t) => ({
-            toolCallId: t.toolCallId,
-            toolName: t.toolName,
-            state: t.state as 'partial-call' | 'call' | 'result',
+          toolInvocations={m.toolInvocations?.map((tool) => ({
+            toolCallId: tool.toolCallId,
+            toolName: tool.toolName,
+            state: tool.state as 'partial-call' | 'call' | 'result',
           }))}
-          theme={theme}
         />
       ))}
 
@@ -119,32 +109,31 @@ export default function ChatMessages({ messages, isLoading, theme }: ChatMessage
           <div
             className='w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0'
             style={{
-              background: isFallout ? `${t.border}20` : '#0f0f1a',
-              color: isFallout ? t.border : 'white',
-              border: isFallout ? `1px solid ${t.border}` : 'none',
-              fontFamily: isFallout ? 'monospace' : 'inherit',
+              background: t.userBubbleBg,
+              color: t.userBubbleText,
+              fontFamily: t.fontFamily,
             }}
           >
-            {isFallout ? '>' : 'D'}
+            {t.labelPrefix ? '>' : 'D'}
           </div>
           <div
             className='rounded-2xl px-4 py-3 flex gap-1.5'
             style={{
-              background: isFallout ? `${t.border}10` : '#f9f9f9',
-              border: `1px solid ${t.border}`,
+              background: t.agentBubbleBg,
+              border: `1px solid ${t.agentBubbleBorder}`,
             }}
           >
             <div
               className='w-1.5 h-1.5 rounded-full animate-bounce'
-              style={{ background: isFallout ? t.border : '#d1d5db', animationDelay: '0ms' }}
+              style={{ background: t.border, animationDelay: '0ms' }}
             />
             <div
               className='w-1.5 h-1.5 rounded-full animate-bounce'
-              style={{ background: isFallout ? t.border : '#d1d5db', animationDelay: '150ms' }}
+              style={{ background: t.border, animationDelay: '150ms' }}
             />
             <div
               className='w-1.5 h-1.5 rounded-full animate-bounce'
-              style={{ background: isFallout ? t.border : '#d1d5db', animationDelay: '300ms' }}
+              style={{ background: t.border, animationDelay: '300ms' }}
             />
           </div>
         </div>

@@ -1,8 +1,9 @@
 'use client';
-import AgentChip from '../agents/AgentChip';
+
 import { Gauge } from 'lucide-react';
-import type { Theme } from '@/app/lib/theme';
-import { themes } from '@/app/lib/theme';
+import { useTheme } from '@/app/context/ThemeContext';
+import { formatLabel } from '@/app/lib/theme';
+import AgentChip from '../agents/AgentChip';
 
 interface ActiveAgent {
   name: string;
@@ -11,23 +12,14 @@ interface ActiveAgent {
 
 interface TopbarProps {
   activeAgents: ActiveAgent[];
-  isDark: boolean;
   onThemeToggle: () => void;
   onClear: () => void;
   onSettings: () => void;
-  theme: Theme;
 }
 
-export default function Topbar({
-  activeAgents,
-  isDark,
-  onThemeToggle,
-  onClear,
-  onSettings,
-  theme,
-}: TopbarProps) {
-  const t = themes[theme];
-  const isFallout = theme === 'fallout';
+export default function Topbar({ activeAgents, onThemeToggle, onClear, onSettings }: TopbarProps) {
+  const { t } = useTheme();
+  const isFallout = !!t.labelPrefix;
 
   return (
     <div
@@ -41,47 +33,21 @@ export default function Topbar({
         <div className='flex items-center gap-2.5'>
           <div
             className='w-8 h-8 rounded-xl flex items-center justify-center'
-            style={{ background: isFallout ? t.border : '#0f0f1a' }}
+            style={{ background: t.accent }}
           >
             <svg width='16' height='16' viewBox='0 0 16 16' fill='none'>
-              <rect x='2' y='2' width='5' height='5' rx='1.5' fill={isFallout ? t.bg : 'white'} />
-              <rect
-                x='9'
-                y='2'
-                width='5'
-                height='5'
-                rx='1.5'
-                fill={isFallout ? t.bg : 'white'}
-                fillOpacity='0.5'
-              />
-              <rect
-                x='2'
-                y='9'
-                width='5'
-                height='5'
-                rx='1.5'
-                fill={isFallout ? t.bg : 'white'}
-                fillOpacity='0.5'
-              />
-              <rect
-                x='9'
-                y='9'
-                width='5'
-                height='5'
-                rx='1.5'
-                fill={isFallout ? t.bg : 'white'}
-                fillOpacity='0.3'
-              />
+              <rect x='2' y='2' width='5' height='5' rx='1.5' fill={t.bg} />
+              <rect x='9' y='2' width='5' height='5' rx='1.5' fill={t.bg} fillOpacity='0.5' />
+              <rect x='2' y='9' width='5' height='5' rx='1.5' fill={t.bg} fillOpacity='0.5' />
+              <rect x='9' y='9' width='5' height='5' rx='1.5' fill={t.bg} fillOpacity='0.3' />
             </svg>
           </div>
           <span
             className='text-sm font-bold tracking-tight'
-            style={{
-              color: isFallout ? t.border : t.text,
-              fontFamily: isFallout ? 'monospace' : 'inherit',
-            }}
+            style={{ color: t.text, fontFamily: t.fontFamily }}
           >
-            DevAgent<span style={{ color: t.textSecondary, fontWeight: 400 }}>OS</span>
+            DevAgent
+            <span style={{ color: t.textSecondary, fontWeight: 400 }}>OS</span>
           </span>
         </div>
 
@@ -89,7 +55,7 @@ export default function Topbar({
 
         <div className='flex items-center gap-1.5'>
           {activeAgents.length === 0 ? (
-            <span className='text-xs' style={{ color: t.textSecondary }}>
+            <span className='text-xs' style={{ color: t.textSecondary, fontFamily: t.fontFamily }}>
               No agent selected
             </span>
           ) : (
@@ -102,7 +68,7 @@ export default function Topbar({
                     background: `${t.border}15`,
                     border: `1px solid ${t.border}`,
                     color: t.border,
-                    fontFamily: 'monospace',
+                    fontFamily: t.fontFamily,
                   }}
                 >
                   <div
@@ -132,7 +98,6 @@ export default function Topbar({
           onClick={onThemeToggle}
           className='w-9 h-5 rounded-full relative transition-colors duration-200'
           style={{ background: isFallout ? t.border : '#e5e7eb' }}
-          title={isFallout ? 'Switch to Spatial' : 'Switch to Fallout'}
         >
           <div
             className='w-4 h-4 rounded-full absolute top-0.5 transition-transform duration-200 shadow-sm'
@@ -149,10 +114,10 @@ export default function Topbar({
           style={{
             color: t.textSecondary,
             border: `1px solid ${t.border}`,
-            background: 'transparent',
+            fontFamily: t.fontFamily,
           }}
         >
-          Clear
+          {formatLabel(t, 'Clear')}
         </button>
       </div>
     </div>

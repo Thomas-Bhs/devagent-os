@@ -1,6 +1,6 @@
 import { cn } from '@/app/lib/utils';
-import type { Theme } from '@/app/lib/theme';
-import { themes } from '@/app/lib/theme';
+import { useTheme } from '@/app/context/ThemeContext';
+import { formatLabel } from '@/app/lib/theme';
 import Image from 'next/image';
 
 interface AgentCardProps {
@@ -12,7 +12,6 @@ interface AgentCardProps {
   isSelected?: boolean;
   isDisabled?: boolean;
   onClick?: () => void;
-  theme: Theme;
   agentId: string;
 }
 
@@ -20,12 +19,6 @@ const badgeConfig = {
   active: { label: 'Active', className: 'bg-emerald-50 text-emerald-600' },
   ready: { label: 'Ready', className: 'bg-blue-50 text-blue-600' },
   soon: { label: 'Soon', className: 'bg-gray-100 text-gray-400' },
-};
-
-const falloutBadgeConfig = {
-  active: { label: 'ONLINE' },
-  ready: { label: 'READY' },
-  soon: { label: 'LOCKED' },
 };
 
 export default function AgentCard({
@@ -37,11 +30,10 @@ export default function AgentCard({
   isSelected = false,
   isDisabled = false,
   onClick,
-  theme,
   agentId,
 }: AgentCardProps) {
-  const t = themes[theme];
-  const isFallout = theme === 'fallout';
+  const { t } = useTheme();
+  const isFallout = !!t.labelPrefix;
 
   if (isFallout) {
     return (
@@ -50,11 +42,11 @@ export default function AgentCard({
         className={cn(
           'p-2 rounded-2xl transition-all duration-150 relative overflow-hidden',
           isDisabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:scale-105',
-          isSelected && isFallout ? 'fallout-selected' : ''
+          isSelected ? 'fallout-selected' : ''
         )}
         style={{
-          background: isSelected ? `${t.border}20` : t.surface,
-          border: `1px solid ${isSelected ? t.border : `${t.border}30`}`,
+          background: isSelected ? t.cardBg : t.surface,
+          border: `1px solid ${isSelected ? t.border : t.cardBorder}`,
         }}
       >
         <div className='relative w-full h-28 mb-2'>
@@ -68,10 +60,9 @@ export default function AgentCard({
             }}
           />
         </div>
-
         <p
           className='text-[10px] font-bold text-center uppercase tracking-wider'
-          style={{ color: t.border, fontFamily: 'monospace' }}
+          style={{ color: t.border, fontFamily: t.fontFamily }}
         >
           {name}
         </p>
@@ -91,11 +82,8 @@ export default function AgentCard({
       )}
     >
       <div
-        className={cn(
-          'w-8 h-8 rounded-xl flex items-center justify-center mb-2.5',
-          isSelected ? 'bg-white/10' : ''
-        )}
-        style={isSelected ? {} : { background: iconBg }}
+        className='w-8 h-8 rounded-xl flex items-center justify-center mb-2.5'
+        style={{ background: isSelected ? 'rgba(255,255,255,0.1)' : iconBg }}
       >
         {icon}
       </div>
@@ -124,7 +112,7 @@ export default function AgentCard({
           isSelected ? 'bg-white/10 text-white/60' : badgeConfig[badge].className
         )}
       >
-        {badgeConfig[badge].label}
+        {formatLabel(t, badgeConfig[badge].label)}
       </span>
     </div>
   );

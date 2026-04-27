@@ -99,11 +99,9 @@ export default function Home() {
         activeAgents={
           selectedAgent ? [{ name: `Agent ${selectedAgent.name}`, color: agentChipColor }] : []
         }
-        isDark={isFallout}
         onThemeToggle={() => setTheme(isFallout ? 'spatial' : 'fallout')}
         onClear={handleClear}
         onSettings={() => setIsSettingsOpen(true)}
-        theme={theme}
       />
 
       <div className='flex flex-1 overflow-hidden'>
@@ -117,7 +115,6 @@ export default function Home() {
           onNewConversation={handleNewConversation}
           onDeleteConversation={handleDeleteConversation}
           onDeleteAllConversations={handleDeleteAllConversations}
-          theme={theme}
         />
 
         <div className='flex flex-col flex-1 overflow-hidden' style={{ background: t.bg }}>
@@ -128,7 +125,7 @@ export default function Home() {
               border: `1px solid ${t.border}`,
             }}
           >
-            <ChatMessages messages={messages} isLoading={isLoading} theme={theme} />
+            <ChatMessages messages={messages} isLoading={isLoading} />
             {error && (
               <div className='mx-4 mb-3 px-4 py-3 bg-red-50 border border-red-100 rounded-2xl flex items-center justify-between'>
                 <p className='text-xs text-red-500'>{error}</p>
@@ -147,7 +144,6 @@ export default function Home() {
               onInputChange={handleInputChange}
               onSubmit={handleSubmit}
               onFileChange={setFileContent}
-              theme={theme}
             />
           </div>
         </div>

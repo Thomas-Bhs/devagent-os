@@ -1,6 +1,5 @@
-import { cn } from '@/app/lib/utils';
-import type { Theme } from '@/app/lib/theme';
-import { themes } from '@/app/lib/theme';
+import { useTheme } from '@/app/context/ThemeContext';
+import { formatLabel } from '@/app/lib/theme';
 
 interface FileContent {
   name: string;
@@ -14,7 +13,6 @@ interface ChatInputProps {
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSubmit: (e: React.FormEvent) => void;
   onFileChange: (file: FileContent | null) => void;
-  theme: Theme;
 }
 
 export default function ChatInput({
@@ -24,10 +22,8 @@ export default function ChatInput({
   onInputChange,
   onSubmit,
   onFileChange,
-  theme,
 }: ChatInputProps) {
-  const t = themes[theme];
-  const isFallout = theme === 'fallout';
+  const { t } = useTheme();
 
   return (
     <div
@@ -41,8 +37,8 @@ export default function ChatInput({
         <div
           className='flex items-center gap-2 mb-3 px-3 py-2 rounded-xl w-fit'
           style={{
-            background: isFallout ? `${t.border}20` : '#0f0f1a',
-            border: isFallout ? `1px solid ${t.border}` : 'none',
+            background: t.userBubbleBg,
+            border: `1px solid ${t.border}`,
           }}
         >
           <svg width='12' height='12' viewBox='0 0 12 12' fill='none'>
@@ -52,13 +48,13 @@ export default function ChatInput({
               width='7'
               height='10'
               rx='1'
-              stroke={isFallout ? t.border : 'white'}
+              stroke={t.userBubbleText}
               strokeOpacity='0.6'
               strokeWidth='1'
             />
             <path
               d='M3 4h5M3 6h4'
-              stroke={isFallout ? t.border : 'white'}
+              stroke={t.userBubbleText}
               strokeOpacity='0.6'
               strokeWidth='0.8'
               strokeLinecap='round'
@@ -66,17 +62,14 @@ export default function ChatInput({
           </svg>
           <span
             className='text-xs font-medium'
-            style={{
-              color: isFallout ? t.border : 'white',
-              fontFamily: isFallout ? 'monospace' : 'inherit',
-            }}
+            style={{ color: t.userBubbleText, fontFamily: t.fontFamily }}
           >
-            {isFallout ? `> ${fileContent.name}_` : fileContent.name}
+            {t.labelPrefix ? `> ${fileContent.name}_` : fileContent.name}
           </span>
           <button
             onClick={() => onFileChange(null)}
-            className='text-sm leading-none ml-1 transition-colors'
-            style={{ color: isFallout ? t.border : 'rgba(255,255,255,0.4)' }}
+            className='text-sm leading-none ml-1'
+            style={{ color: t.userBubbleText, opacity: 0.5 }}
           >
             ×
           </button>
@@ -88,15 +81,15 @@ export default function ChatInput({
           value={input}
           onChange={onInputChange}
           placeholder={
-            isFallout ? '> Enter command..._' : 'Ask a question or give an instruction...'
+            t.labelPrefix ? '> Enter command..._' : 'Ask a question or give an instruction...'
           }
           disabled={isLoading}
           className='flex-1 px-4 py-3 text-sm rounded-2xl outline-none transition-all disabled:opacity-50'
           style={{
-            background: isFallout ? `${t.bg}` : '#f9fafb',
+            background: t.inputBg,
             border: `1px solid ${t.border}`,
-            color: isFallout ? t.text : '#111',
-            fontFamily: isFallout ? 'monospace' : 'inherit',
+            color: t.text,
+            fontFamily: t.fontFamily,
           }}
         />
 
@@ -114,12 +107,12 @@ export default function ChatInput({
               width='12'
               height='10'
               rx='2'
-              stroke={isFallout ? t.border : '#9ca3af'}
+              stroke={t.textSecondary}
               strokeWidth='1'
             />
             <path
               d='M5 2.5V1.5h5v1'
-              stroke={isFallout ? t.border : '#9ca3af'}
+              stroke={t.textSecondary}
               strokeWidth='1'
               strokeLinecap='round'
             />
@@ -143,23 +136,23 @@ export default function ChatInput({
           disabled={isLoading || !input.trim()}
           className='w-11 h-11 flex items-center justify-center rounded-2xl transition-all disabled:opacity-30 disabled:cursor-not-allowed'
           style={{
-            background: isFallout ? t.border : '#3b82f6',
-            color: isFallout ? t.bg : 'white',
+            background: t.accent,
+            color: t.bg,
           }}
         >
           {isLoading ? (
             <div
               className='w-4 h-4 border-2 rounded-full animate-spin'
               style={{
-                borderColor: `${isFallout ? t.bg : 'rgba(255,255,255,0.3)'}`,
-                borderTopColor: isFallout ? t.surface : 'white',
+                borderColor: `${t.bg}30`,
+                borderTopColor: t.bg,
               }}
             />
           ) : (
             <svg width='16' height='16' viewBox='0 0 16 16' fill='none'>
               <path
                 d='M3 8h10M9 4l4 4-4 4'
-                stroke={isFallout ? t.bg : 'white'}
+                stroke={t.bg}
                 strokeWidth='1.5'
                 strokeLinecap='round'
                 strokeLinejoin='round'
