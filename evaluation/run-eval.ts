@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import { devQuestions } from './datasets/dev';
 import { debugQuestions } from './datasets/debug';
 import { qaQuestions } from './datasets/qa';
+import { uiuxQuestions } from './datasets/uiux';
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const BASE_URL = process.env.EVAL_URL || 'http://localhost:3000';
@@ -26,6 +27,12 @@ const agentConfig = [
     route: '/api/agents/qa',
     questions: qaQuestions,
     outputFile: `evaluation/results/${MODEL}-qa.json`,
+  },
+  {
+    name: 'uiux',
+    route: '/api/agents/uiux',
+    questions: uiuxQuestions,
+    outputFile: `evaluation/results/${MODEL}-uiux.json`,
   },
 ];
 
@@ -192,3 +199,4 @@ runAllEvals().catch(console.error);
 
 //Eval just one agent
 //evalAgent(agentConfig[2]).catch(console.error)
+//evalAgent(agentConfig[3]).catch(console.error);

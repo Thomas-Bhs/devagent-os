@@ -74,9 +74,9 @@ export const AGENTS: AgentConfig[] = [
     name: 'UI/UX',
     description: 'Design, visual components',
     iconBg: '#fae8ff',
-    badge: 'soon',
+    badge: 'active',
     color: '#a21caf',
-    isDisabled: true,
+    isDisabled: false,
     route: '/api/agents/uiux',
     chipColor: 'purple',
     icon: (
