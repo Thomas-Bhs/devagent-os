@@ -134,9 +134,9 @@ export const AGENTS: AgentConfig[] = [
     name: 'Designer',
     description: 'Mockups, style guide',
     iconBg: '#fff7ed',
-    badge: 'soon',
+    badge: 'active',
     color: '#ea580c',
-    isDisabled: true,
+    isDisabled: false,
     route: '/api/agents/designer',
     chipColor: 'sky',
     icon: (
