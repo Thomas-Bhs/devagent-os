@@ -20,11 +20,12 @@ const agentColors: Record<string, string> = {
   dev: '#2563eb',
   debug: '#dc2626',
   qa: '#16a34a',
+  uiux: '#a21caf',
   orchestrator: '#0284c7',
 };
 
 export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
-  const { t, isFallout, theme } = useTheme();
+  const { t, isFallout } = useTheme();
   const [stats, setStats] = useState<TokenStats | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -60,7 +61,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               className='text-sm font-bold'
               style={{
                 color: isFallout ? t.border : t.text,
-                fontFamily: isFallout ? 'monospace' : 'inherit',
+                fontFamily: t.fontFamily,
               }}
             >
               {isFallout ? '// SETTINGS & ANALYTICS_' : 'Settings & Analytics'}
@@ -89,8 +90,8 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               <p
                 className='text-[10px] font-bold uppercase tracking-widest mb-3'
                 style={{
-                  color: isFallout ? t.border : '#9ca3af',
-                  fontFamily: isFallout ? 'monospace' : 'inherit',
+                  color: t.sectionLabelColor,
+                  fontFamily: t.fontFamily,
                 }}
               >
                 {isFallout ? '// TOKEN USAGE_' : 'Token usage'}
@@ -106,15 +107,15 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                     key={label}
                     className='rounded-2xl p-3'
                     style={{
-                      background: isFallout ? `${t.border}10` : '#f9fafb',
-                      border: `1px solid ${isFallout ? `${t.border}40` : 'transparent'}`,
+                      background: t.cardBg,
+                      border: `1px solid ${t.cardBorder}`,
                     }}
                   >
                     <p
                       className='text-[9px] font-semibold uppercase tracking-wide mb-1'
                       style={{
                         color: t.textSecondary,
-                        fontFamily: isFallout ? 'monospace' : 'inherit',
+                        fontFamily: t.fontFamily,
                       }}
                     >
                       {label}
@@ -123,7 +124,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                       className='text-sm font-bold'
                       style={{
                         color: isFallout ? t.border : t.text,
-                        fontFamily: isFallout ? 'monospace' : 'inherit',
+                        fontFamily: t.fontFamily,
                       }}
                     >
                       {data.tokens.toLocaleString()}
@@ -138,8 +139,8 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               <p
                 className='text-[10px] font-bold uppercase tracking-widest mb-3'
                 style={{
-                  color: isFallout ? t.border : '#9ca3af',
-                  fontFamily: isFallout ? 'monospace' : 'inherit',
+                  color: t.sectionLabelColor,
+                  fontFamily: t.fontFamily,
                 }}
               >
                 {isFallout ? '// BY AGENT_' : 'By agent'}
@@ -155,7 +156,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                           className='text-xs font-medium capitalize'
                           style={{
                             color: isFallout ? t.border : t.text,
-                            fontFamily: isFallout ? 'monospace' : 'inherit',
+                            fontFamily: t.fontFamily,
                           }}
                         >
                           {isFallout ? `> ${agent.agent.toUpperCase()}` : agent.agent}
@@ -164,7 +165,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                           className='text-xs'
                           style={{
                             color: t.textSecondary,
-                            fontFamily: isFallout ? 'monospace' : 'inherit',
+                            fontFamily: t.fontFamily,
                           }}
                         >
                           {agent.tokens.toLocaleString()} — ${agent.cost.toFixed(4)}
@@ -191,8 +192,8 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               <p
                 className='text-[10px] font-bold uppercase tracking-widest mb-3'
                 style={{
-                  color: isFallout ? t.border : '#9ca3af',
-                  fontFamily: isFallout ? 'monospace' : 'inherit',
+                  color: t.sectionLabelColor,
+                  fontFamily: t.fontFamily,
                 }}
               >
                 {isFallout ? '// MODELS_' : 'Models'}
@@ -201,21 +202,22 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               <div
                 className='rounded-2xl p-3 space-y-1.5 text-xs'
                 style={{
-                  background: isFallout ? `${t.border}10` : '#f9fafb',
-                  border: `1px solid ${isFallout ? `${t.border}40` : 'transparent'}`,
+                  background: t.cardBg,
+                  border: `1px solid ${t.cardBorder}`,
                 }}
               >
                 {[
                   { agent: 'Dev', model: 'Claude Sonnet' },
                   { agent: 'Debug', model: 'Claude Sonnet' },
                   { agent: 'QA', model: 'Claude Haiku' },
+                  { agent: 'UI/UX', model: 'Claude Haiku' },
                   { agent: 'Orchestrator', model: 'Claude Sonnet' },
                 ].map(({ agent, model }) => (
                   <div key={agent} className='flex justify-between'>
                     <span
                       style={{
                         color: t.textSecondary,
-                        fontFamily: isFallout ? 'monospace' : 'inherit',
+                        fontFamily: t.fontFamily,
                       }}
                     >
                       {isFallout ? `> ${agent}` : agent}
@@ -224,7 +226,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                       className='font-medium'
                       style={{
                         color: isFallout ? t.border : t.text,
-                        fontFamily: isFallout ? 'monospace' : 'inherit',
+                        fontFamily: t.fontFamily,
                       }}
                     >
                       {model}
@@ -238,7 +240,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               className='text-xs text-center py-8'
               style={{
                 color: t.textSecondary,
-                fontFamily: isFallout ? 'monospace' : 'inherit',
+                fontFamily: t.fontFamily,
               }}
             >
               {isFallout ? '> No data found_' : 'No data available yet'}
