@@ -10,30 +10,40 @@ const langsmithClient = new Client({
   apiKey: process.env.LANGSMITH_API_KEY,
 });
 
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
 async function callAgent(route: string, message: string): Promise<string> {
-  const res = await fetch(`${BASE_URL}${route}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      messages: [{ role: 'user', content: message }],
-    }),
-  });
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 25000);
 
-  const text = await res.text();
-  const lines = text.split('\n').filter((l) => l.startsWith('0:'));
-  return lines
-    .map((l) => {
-      try {
-        return JSON.parse(l.slice(2));
-      } catch {
-        return '';
-      }
-    })
-    .join('');
+    const res = await fetch(`${BASE_URL}${route}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: message }],
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+    const text = await res.text();
+    const lines = text.split('\n').filter((l) => l.startsWith('0:'));
+    return lines
+      .map((l) => {
+        try {
+          return JSON.parse(l.slice(2));
+        } catch {
+          return '';
+        }
+      })
+      .join('');
+  } catch (error) {
+    console.error(`callAgent timeout on ${route}:`, error);
+    return `Agent timeout - result not available.`;
+  }
 }
 
 export const POST = traceable(
@@ -45,18 +55,22 @@ export const POST = traceable(
 
       const result = streamText({
         model: anthropic('claude-sonnet-4-5'),
-        system: `Tu es l'orchestrateur de 3 agents spécialisés :
+        system: `Tu es l'orchestrateur de 5 agents spécialisés :
         - Agent DEV (/api/agents/dev) : code, composants, hooks, architecture
         - Agent DEBUG (/api/agents/debug) : erreurs, bugs, performance
         - Agent QA (/api/agents/qa) : tests, couverture, qualité
+        - Agent UIUX (/api/agents/uiux) : design, couleurs, accessibilité, style guide
+        - Agent DESIGNER (/api/agents/designer) : maquettes, layouts, typographie
 
         Délégation :
         - "erreur/bug/crash/undefined/TypeError" → DEBUG
         - "test/jest/coverage/spec" → QA
         - "crée/génère/hook/composant/structure" → DEV
-        - Tâches complexes → DEV puis DEBUG puis QA
+        - "couleur/palette/accessibilité/style guide/design system" → UIUX
+        - "maquette/landing/dashboard/login/layout/typographie" → DESIGNER
+        - Tâches complexes → pipeline séquentiel selon le besoin
 
-        Après chaque tool : afficher le résultat complet avec sections ## Agent Dev / ## Agent Debug / ## Agent QA`,
+        Après chaque tool : afficher le résultat complet avec sections ## Agent Dev / ## Agent Debug / ## Agent QA / ## Agent UI/UX / ## Agent Designer`,
 
         messages: trimmedMessages,
         maxSteps: 5,
@@ -66,7 +80,9 @@ export const POST = traceable(
           delegateToAgent: tool({
             description: 'Délègue une tâche à un agent spécialisé et retourne sa réponse',
             parameters: z.object({
-              agent: z.enum(['dev', 'debug', 'qa']).describe("L'agent à appeler"),
+              agent: z
+                .enum(['dev', 'debug', 'qa', 'uiux', 'designer'])
+                .describe("L'agent à appeler"),
               task: z.string().describe("La tâche à confier à l'agent"),
               reason: z.string().describe('Pourquoi cet agent est le mieux placé'),
             }),
@@ -75,10 +91,12 @@ export const POST = traceable(
                 dev: '/api/agents/dev',
                 debug: '/api/agents/debug',
                 qa: '/api/agents/qa',
+                uiux: '/api/agents/uiux',
+                designer: '/api/agents/designer',
               };
               console.log(`Orchestrateur → Agent ${agent}: ${reason}`);
               const response = await callAgent(routes[agent], task);
-              return { agent, task, reason, response: response.slice(0, 1000) }; //limit response size at 1000 chars
+              return { agent, task, reason, response: response.slice(0, 1000) };
             },
           }),
 
@@ -89,7 +107,7 @@ export const POST = traceable(
               steps: z
                 .array(
                   z.object({
-                    agent: z.enum(['dev', 'debug', 'qa']),
+                    agent: z.enum(['dev', 'debug', 'qa', 'uiux', 'designer']),
                     instruction: z.string().describe("L'instruction pour cet agent"),
                   })
                 )
