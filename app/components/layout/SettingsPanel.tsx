@@ -21,6 +21,7 @@ const agentColors: Record<string, string> = {
   debug: '#dc2626',
   qa: '#16a34a',
   uiux: '#a21caf',
+  designer: '#ea580c',
   orchestrator: '#0284c7',
 };
 
@@ -211,6 +212,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                   { agent: 'Debug', model: 'Claude Sonnet' },
                   { agent: 'QA', model: 'Claude Haiku' },
                   { agent: 'UI/UX', model: 'Claude Haiku' },
+                  { agent: 'Designer', model: 'Claude Haiku' },
                   { agent: 'Orchestrator', model: 'Claude Sonnet' },
                 ].map(({ agent, model }) => (
                   <div key={agent} className='flex justify-between'>
