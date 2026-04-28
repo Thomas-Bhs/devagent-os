@@ -125,7 +125,7 @@ export default function Home() {
               border: `1px solid ${t.border}`,
             }}
           >
-            <ChatMessages messages={messages} isLoading={isLoading} />
+            <ChatMessages messages={messages} isLoading={isLoading} agentId={selectedAgentId} />
             {error && (
               <div className='mx-4 mb-3 px-4 py-3 bg-red-50 border border-red-100 rounded-2xl flex items-center justify-between'>
                 <p className='text-xs text-red-500'>{error}</p>
