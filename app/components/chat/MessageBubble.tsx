@@ -1,7 +1,12 @@
+'use client';
+
+import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useTheme } from '@/app/context/ThemeContext';
 import { formatLabel } from '@/app/lib/theme';
+import { Eye } from 'lucide-react';
 import ToolPill from './ToolPill';
+import PreviewModal from './PreviewModal';
 
 interface ToolInvocation {
   toolCallId: string;
@@ -14,6 +19,28 @@ interface MessageBubbleProps {
   content: string;
   agentName?: string;
   toolInvocations?: ToolInvocation[];
+  isDesigner?: boolean;
+}
+
+function extractJSXCode(content: string): string | null {
+  const bt = String.fromCharCode(96, 96, 96)
+  const pattern = bt + '(?:jsx|tsx|javascript|typescript)?\\n([\\s\\S]*?)' + bt
+  const regex = new RegExp(pattern, 'g')
+  const matches = [...content.matchAll(regex)]
+  
+  console.log('nombre de blocs trouvés:', matches.length)
+  
+  for (const match of matches) {
+    const code = match[1].trim()
+    if (
+      (code.includes('export default') || code.includes('function ') || code.includes('const ')) &&
+      (code.includes('return (') || code.includes('return(')) &&
+      (code.includes('<div') || code.includes('<section') || code.includes('<main') || code.includes('<nav'))
+    ) {
+      return code
+    }
+  }
+  return null
 }
 
 export default function MessageBubble({
@@ -21,8 +48,10 @@ export default function MessageBubble({
   content,
   agentName = 'Agent',
   toolInvocations,
+  isDesigner = false,
 }: MessageBubbleProps) {
   const { t } = useTheme();
+  const [previewCode, setPreviewCode] = useState<string | null>(null);
 
   if (role === 'user') {
     return (
@@ -42,91 +71,147 @@ export default function MessageBubble({
     );
   }
 
-  return (
-    <div className='flex gap-3 items-start'>
-      <div
-        className='w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-xs font-bold mt-0.5'
-        style={{
-          background: t.userBubbleBg,
-          color: t.userBubbleText,
-          fontFamily: t.fontFamily,
-        }}
-      >
-        {t.labelPrefix ? '>' : agentName.slice(0, 1)}
-      </div>
+  const jsxCode = isDesigner ? extractJSXCode(content) : null;
+  console.log('isDesigner:', isDesigner);
+  console.log('jsxCode:', jsxCode);
+  console.log('content preview:', content.slice(0, 200));
+  console.log(
+    'matches found:',
+    [...content.matchAll(/`{3}(?:jsx|tsx|javascript|typescript)?\n([\s\S]*?)`{3}/g)].length
+  );
+  console.log(
+    'charCodes:',
+    [...content.slice(200, 210)].map((c) => c.charCodeAt(0))
+  );
+  console.log('contenu brut:', JSON.stringify(content.slice(190, 220)));
 
-      <div className='flex-1 min-w-0'>
-        <p
-          className='text-[10px] font-bold uppercase tracking-widest mb-1.5'
+  const backtickIndex = content.indexOf('`');
+  console.log('premier backtick à index:', backtickIndex);
+  console.log('charCode du backtick:', content.charCodeAt(backtickIndex));
+  console.log('contexte:', JSON.stringify(content.slice(backtickIndex - 2, backtickIndex + 10)));
+
+  const testRegex = /```/g;
+  const testMatches = [...content.matchAll(testRegex)];
+  console.log('backticks trouvés:', testMatches.length);
+  console.log(
+    'index des backticks:',
+    testMatches.map((m) => m.index)
+  );
+
+  let idx = content.indexOf('`');
+  let count = 0;
+  while (idx !== -1 && count < 5) {
+    console.log(`backtick ${count} à index ${idx}, suivant charCode:`, content.charCodeAt(idx + 1));
+    idx = content.indexOf('`', idx + 1);
+    count++;
+  }
+
+  return (
+    <>
+      {previewCode && <PreviewModal code={previewCode} onClose={() => setPreviewCode(null)} />}
+
+      <div className='flex gap-3 items-start'>
+        <div
+          className='w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-xs font-bold mt-0.5'
           style={{
-            color: t.sectionLabelColor,
+            background: t.userBubbleBg,
+            color: t.userBubbleText,
             fontFamily: t.fontFamily,
           }}
         >
-          {formatLabel(t, agentName)}
-        </p>
+          {t.labelPrefix ? '>' : agentName.slice(0, 1)}
+        </div>
 
-        {toolInvocations?.map((tool) => (
-          <ToolPill
-            key={tool.toolCallId}
-            toolName={tool.toolName}
-            state={tool.state === 'partial-call' || tool.state === 'call' ? 'running' : 'completed'}
-          />
-        ))}
-
-        {content && (
-          <div
-            className='rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed'
+        <div className='flex-1 min-w-0'>
+          <p
+            className='text-[10px] font-bold uppercase tracking-widest mb-1.5'
             style={{
-              background: t.agentBubbleBg,
-              border: `1px solid ${t.agentBubbleBorder}`,
-              color: t.text,
+              color: t.sectionLabelColor,
               fontFamily: t.fontFamily,
             }}
           >
-            <ReactMarkdown
-              components={{
-                code({ className, children }) {
-                  const isBlock = className?.includes('language-');
-                  return isBlock ? (
-                    <pre
-                      className='p-4 rounded-xl overflow-x-auto my-3 text-xs leading-relaxed'
-                      style={{
-                        background: t.codeBg,
-                        color: t.codeText,
-                        border: `1px solid ${t.border}`,
-                      }}
-                    >
-                      <code>{children}</code>
-                    </pre>
-                  ) : (
-                    <code
-                      className='px-1.5 py-0.5 rounded-lg text-xs font-mono'
-                      style={{
-                        background: t.cardBg,
-                        color: t.text,
-                      }}
-                    >
-                      {children}
-                    </code>
-                  );
-                },
-                p({ children }) {
-                  return <p className='mb-2 last:mb-0'>{children}</p>;
-                },
-                ul({ children }) {
-                  return <ul className='list-disc pl-4 mb-2 space-y-1'>{children}</ul>;
-                },
-                ol({ children }) {
-                  return <ol className='list-decimal pl-4 mb-2 space-y-1'>{children}</ol>;
-                },
+            {formatLabel(t, agentName)}
+          </p>
+
+          {toolInvocations?.map((tool) => (
+            <ToolPill
+              key={tool.toolCallId}
+              toolName={tool.toolName}
+              state={
+                tool.state === 'partial-call' || tool.state === 'call' ? 'running' : 'completed'
+              }
+            />
+          ))}
+
+          {content && (
+            <div
+              className='rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed'
+              style={{
+                background: t.agentBubbleBg,
+                border: `1px solid ${t.agentBubbleBorder}`,
+                color: t.text,
+                fontFamily: t.fontFamily,
               }}
             >
-              {content}
-            </ReactMarkdown>
-          </div>
-        )}
+              <ReactMarkdown
+                components={{
+                  code({ className, children }) {
+                    const isBlock = className?.includes('language-');
+                    return isBlock ? (
+                      <pre
+                        className='p-4 rounded-xl overflow-x-auto my-3 text-xs leading-relaxed'
+                        style={{
+                          background: t.codeBg,
+                          color: t.codeText,
+                          border: `1px solid ${t.border}`,
+                        }}
+                      >
+                        <code>{children}</code>
+                      </pre>
+                    ) : (
+                      <code
+                        className='px-1.5 py-0.5 rounded-lg text-xs font-mono'
+                        style={{
+                          background: t.cardBg,
+                          color: t.text,
+                        }}
+                      >
+                        {children}
+                      </code>
+                    );
+                  },
+                  p({ children }) {
+                    return <p className='mb-2 last:mb-0'>{children}</p>;
+                  },
+                  ul({ children }) {
+                    return <ul className='list-disc pl-4 mb-2 space-y-1'>{children}</ul>;
+                  },
+                  ol({ children }) {
+                    return <ol className='list-decimal pl-4 mb-2 space-y-1'>{children}</ol>;
+                  },
+                }}
+              >
+                {content}
+              </ReactMarkdown>
+
+              {jsxCode && (
+                <button
+                  onClick={() => setPreviewCode(jsxCode)}
+                  className='mt-3 flex items-center gap-2 text-xs px-3 py-2 rounded-xl transition-all'
+                  style={{
+                    background: t.cardBg,
+                    color: t.text,
+                    border: `1px solid ${t.border}`,
+                  }}
+                >
+                  <Eye size={13} />
+                  {t.labelPrefix ? '> Preview component_' : 'Preview component'}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

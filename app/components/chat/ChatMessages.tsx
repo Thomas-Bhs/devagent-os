@@ -7,9 +7,10 @@ import MessageBubble from './MessageBubble';
 interface ChatMessagesProps {
   messages: Message[];
   isLoading: boolean;
+  agentId: string;
 }
 
-export default function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
+export default function ChatMessages({ messages, isLoading, agentId }: ChatMessagesProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const { t } = useTheme();
 
@@ -101,6 +102,7 @@ export default function ChatMessages({ messages, isLoading }: ChatMessagesProps)
             toolName: tool.toolName,
             state: tool.state as 'partial-call' | 'call' | 'result',
           }))}
+          isDesigner={agentId === 'designer'}
         />
       ))}
 
