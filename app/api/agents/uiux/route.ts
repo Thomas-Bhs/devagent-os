@@ -37,7 +37,7 @@ Règles :
         : baseSystem;
 
       const result = streamText({
-        model: anthropic('claude-sonnet-4-5'),
+        model: anthropic('claude-haiku-4-5-20251001'),
         system,
         messages: trimmedMessages,
         maxSteps: 3,
@@ -87,11 +87,15 @@ Règles :
         if (usage) {
           trackTokens({
             agent: 'uiux',
-            model: 'claude-sonnet-4-5',
+            model: 'claude-haiku-4-5-20251001',
             promptTokens: usage.promptTokens,
             completionTokens: usage.completionTokens,
             totalTokens: usage.totalTokens,
-            cost: calculateCost('claude-sonnet-4-5', usage.promptTokens, usage.completionTokens),
+            cost: calculateCost(
+              'claude-haiku-4-5-20251001',
+              usage.promptTokens,
+              usage.completionTokens
+            ),
             conversationId: 'unknown',
           }).catch(console.error);
         }
