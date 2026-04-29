@@ -7,7 +7,7 @@ import AgentChip from '../agents/AgentChip';
 
 interface ActiveAgent {
   name: string;
-  color: 'indigo' | 'amber' | 'green' | 'purple' | 'sky';
+  hexColor: string;
 }
 
 interface TopbarProps {
@@ -78,7 +78,7 @@ export default function Topbar({ activeAgents, onThemeToggle, onClear, onSetting
                   {`> ${agent.name.toUpperCase()}_`}
                 </div>
               ) : (
-                <AgentChip key={agent.name} name={agent.name} color={agent.color} />
+                <AgentChip key={agent.name} name={agent.name} hexColor={agent.hexColor} />
               )
             )
           )}

@@ -4,7 +4,6 @@ import { getConversation, deleteConversation } from '@/app/lib/db/conversations'
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    console.log('GET conversation id:', id);
     const conversation = await getConversation(id);
     return NextResponse.json(conversation);
   } catch (error) {
@@ -16,9 +15,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    console.log('DELETE conversation id:', id);
-    const result = await deleteConversation(id);
-    console.log('Delete result:', result);
+    await deleteConversation(id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Conversation DELETE error:', error);

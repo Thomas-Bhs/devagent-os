@@ -18,8 +18,8 @@ interface FileContent {
 }
 
 export default function Home() {
-  const { theme, setTheme, t, isFallout } = useTheme();
-  const { selectedAgentId, setSelectedAgentId, selectedAgent, agentRoute, agentChipColor } =
+  const { theme, setTheme, t } = useTheme();
+  const { selectedAgentId, setSelectedAgentId, selectedAgent, agentRoute } =
     useAgent();
   const {
     conversations,
@@ -97,9 +97,11 @@ export default function Home() {
     <div className='flex flex-col h-screen' style={{ background: t.bg }}>
       <Topbar
         activeAgents={
-          selectedAgent ? [{ name: `Agent ${selectedAgent.name}`, color: agentChipColor }] : []
+          selectedAgent
+            ? [{ name: `Agent ${selectedAgent.name}`, hexColor: selectedAgent.color }]
+            : []
         }
-        onThemeToggle={() => setTheme(isFallout ? 'spatial' : 'fallout')}
+        onThemeToggle={() => setTheme( theme === 'fallout' ? 'spatial' : 'fallout')}
         onClear={handleClear}
         onSettings={() => setIsSettingsOpen(true)}
       />

@@ -7,7 +7,6 @@ export interface AgentConfig {
   color: string;
   isDisabled: boolean;
   route: string;
-  chipColor: 'indigo' | 'amber' | 'green' | 'purple' | 'sky';
   icon: React.ReactNode;
 }
 
@@ -21,7 +20,6 @@ export const AGENTS: AgentConfig[] = [
     color: '#2563eb',
     isDisabled: false,
     route: '/api/agents/dev',
-    chipColor: 'indigo',
     icon: (
       <svg width='18' height='18' viewBox='0 0 18 18' fill='none'>
         <path
@@ -51,7 +49,6 @@ export const AGENTS: AgentConfig[] = [
     color: '#dc2626',
     isDisabled: false,
     route: '/api/agents/debug',
-    chipColor: 'amber',
     icon: (
       <svg width='18' height='18' viewBox='0 0 18 18' fill='none'>
         <path
@@ -78,7 +75,6 @@ export const AGENTS: AgentConfig[] = [
     color: '#a21caf',
     isDisabled: false,
     route: '/api/agents/uiux',
-    chipColor: 'purple',
     icon: (
       <svg width='18' height='18' viewBox='0 0 18 18' fill='none'>
         <rect x='2' y='2' width='6' height='6' rx='1.5' stroke='#a21caf' strokeWidth='1.5' />
@@ -115,7 +111,6 @@ export const AGENTS: AgentConfig[] = [
     color: '#16a34a',
     isDisabled: false,
     route: '/api/agents/qa',
-    chipColor: 'green',
     icon: (
       <svg width='18' height='18' viewBox='0 0 18 18' fill='none'>
         <path
@@ -138,7 +133,6 @@ export const AGENTS: AgentConfig[] = [
     color: '#ea580c',
     isDisabled: false,
     route: '/api/agents/designer',
-    chipColor: 'sky',
     icon: (
       <svg width='18' height='18' viewBox='0 0 18 18' fill='none'>
         <path
@@ -162,7 +156,6 @@ export const AGENTS: AgentConfig[] = [
     color: '#0284c7',
     isDisabled: false,
     route: '/api/agents/orchestrator',
-    chipColor: 'sky',
     icon: (
       <svg width='18' height='18' viewBox='0 0 18 18' fill='none'>
         <circle cx='9' cy='4' r='2' stroke='#0284c7' strokeWidth='1.5' />
@@ -185,8 +178,4 @@ export function getAgentById(id: string): AgentConfig | undefined {
 
 export function getAgentRoute(id: string): string {
   return getAgentById(id)?.route || '/api/agents/dev';
-}
-
-export function getAgentChipColor(id: string): 'indigo' | 'amber' | 'green' | 'purple' | 'sky' {
-  return getAgentById(id)?.chipColor || 'indigo';
 }

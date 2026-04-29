@@ -35,4 +35,9 @@ export const spatialTheme: ThemeConfig = {
   agentBubbleBorder: '#f0f0f0',
   codeBg: '#0f0f1a',
   codeText: '#f0f0f0',
+  agentBarBg: '', //use agentColors for this
+
+  //semantic colors
+  highlightColor: '#0f0f1a',
+  subtleBg: '#f3f4f6',
 };

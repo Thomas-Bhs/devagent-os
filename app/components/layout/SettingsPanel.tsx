@@ -1,15 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { cn } from '@/app/lib/utils';
 import { useTheme } from '@/app/context/ThemeContext';
-
-interface TokenStats {
-  today: { tokens: number; cost: number };
-  week: { tokens: number; cost: number };
-  month: { tokens: number; cost: number };
-  byAgent: { agent: string; tokens: number; cost: number }[];
-}
+import { useTokenStats } from '@/app/hooks/useTokenStats';
+import { formatLabel } from '@/app/lib/theme';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -26,21 +20,8 @@ const agentColors: Record<string, string> = {
 };
 
 export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
-  const { t, isFallout } = useTheme();
-  const [stats, setStats] = useState<TokenStats | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    setLoading(true);
-    fetch('/api/stats')
-      .then((res) => res.json())
-      .then((data) => setStats(data))
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [isOpen]);
-
-  const totalAgentTokens = stats?.byAgent.reduce((acc, a) => acc + a.tokens, 0) || 1;
+  const { t } = useTheme();
+  const { stats, loading, totalAgentTokens } = useTokenStats(isOpen);
 
   return (
     <>
@@ -61,11 +42,11 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             <h2
               className='text-sm font-bold'
               style={{
-                color: isFallout ? t.border : t.text,
+                color: t.highlightColor,
                 fontFamily: t.fontFamily,
               }}
             >
-              {isFallout ? '// SETTINGS & ANALYTICS_' : 'Settings & Analytics'}
+              {formatLabel(t, 'Settings & Analytics')}
             </h2>
             <button
               onClick={onClose}
@@ -95,7 +76,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                   fontFamily: t.fontFamily,
                 }}
               >
-                {isFallout ? '// TOKEN USAGE_' : 'Token usage'}
+                {formatLabel(t, 'Token usage')}
               </p>
 
               <div className='grid grid-cols-3 gap-2 mb-6'>
@@ -124,7 +105,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                     <p
                       className='text-sm font-bold'
                       style={{
-                        color: isFallout ? t.border : t.text,
+                        color: t.highlightColor,
                         fontFamily: t.fontFamily,
                       }}
                     >
@@ -144,7 +125,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                   fontFamily: t.fontFamily,
                 }}
               >
-                {isFallout ? '// BY AGENT_' : 'By agent'}
+                {formatLabel(t, 'By agent')}
               </p>
 
               <div className='space-y-3 mb-6'>
@@ -156,11 +137,11 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                         <span
                           className='text-xs font-medium capitalize'
                           style={{
-                            color: isFallout ? t.border : t.text,
+                            color: t.highlightColor,
                             fontFamily: t.fontFamily,
                           }}
                         >
-                          {isFallout ? `> ${agent.agent.toUpperCase()}` : agent.agent}
+                          {formatLabel(t, agent.agent)}
                         </span>
                         <span
                           className='text-xs'
@@ -174,15 +155,13 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                       </div>
                       <div
                         className='h-1.5 rounded-full overflow-hidden'
-                        style={{ background: isFallout ? `${t.border}20` : '#f3f4f6' }}
+                        style={{ background: t.subtleBg }}
                       >
                         <div
                           className='h-full rounded-full transition-all duration-500'
                           style={{
                             width: `${(agent.tokens / totalAgentTokens) * 100}%`,
-                            background: isFallout
-                              ? t.border
-                              : agentColors[agent.agent] || '#6b7280',
+                            background: t.agentBarBg || agentColors[agent.agent] || '#6b7280',
                           }}
                         />
                       </div>
@@ -197,7 +176,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                   fontFamily: t.fontFamily,
                 }}
               >
-                {isFallout ? '// MODELS_' : 'Models'}
+                {formatLabel(t, 'Models')}
               </p>
 
               <div
@@ -222,12 +201,12 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                         fontFamily: t.fontFamily,
                       }}
                     >
-                      {isFallout ? `> ${agent}` : agent}
+                      {formatLabel(t, agent)}
                     </span>
                     <span
                       className='font-medium'
                       style={{
-                        color: isFallout ? t.border : t.text,
+                        color: t.highlightColor,
                         fontFamily: t.fontFamily,
                       }}
                     >
@@ -245,7 +224,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                 fontFamily: t.fontFamily,
               }}
             >
-              {isFallout ? '> No data found_' : 'No data available yet'}
+              {formatLabel(t, 'No data available yet')}
             </p>
           )}
         </div>
