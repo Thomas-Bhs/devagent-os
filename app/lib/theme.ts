@@ -36,6 +36,11 @@ export interface ThemeConfig {
   agentBubbleBorder: string;
   codeBg: string;
   codeText: string;
+  agentBarBg: string;
+
+  // semantic colors
+  highlightColor: string  
+  subtleBg: string 
 }
 
 export type Theme = 'spatial' | 'fallout';

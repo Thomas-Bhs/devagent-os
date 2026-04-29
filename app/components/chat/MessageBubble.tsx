@@ -72,39 +72,6 @@ export default function MessageBubble({
   }
 
   const jsxCode = isDesigner ? extractJSXCode(content) : null;
-  console.log('isDesigner:', isDesigner);
-  console.log('jsxCode:', jsxCode);
-  console.log('content preview:', content.slice(0, 200));
-  console.log(
-    'matches found:',
-    [...content.matchAll(/`{3}(?:jsx|tsx|javascript|typescript)?\n([\s\S]*?)`{3}/g)].length
-  );
-  console.log(
-    'charCodes:',
-    [...content.slice(200, 210)].map((c) => c.charCodeAt(0))
-  );
-  console.log('contenu brut:', JSON.stringify(content.slice(190, 220)));
-
-  const backtickIndex = content.indexOf('`');
-  console.log('premier backtick à index:', backtickIndex);
-  console.log('charCode du backtick:', content.charCodeAt(backtickIndex));
-  console.log('contexte:', JSON.stringify(content.slice(backtickIndex - 2, backtickIndex + 10)));
-
-  const testRegex = /```/g;
-  const testMatches = [...content.matchAll(testRegex)];
-  console.log('backticks trouvés:', testMatches.length);
-  console.log(
-    'index des backticks:',
-    testMatches.map((m) => m.index)
-  );
-
-  let idx = content.indexOf('`');
-  let count = 0;
-  while (idx !== -1 && count < 5) {
-    console.log(`backtick ${count} à index ${idx}, suivant charCode:`, content.charCodeAt(idx + 1));
-    idx = content.indexOf('`', idx + 1);
-    count++;
-  }
 
   return (
     <>

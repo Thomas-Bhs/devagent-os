@@ -31,4 +31,9 @@ export const falloutTheme: ThemeConfig = {
   agentBubbleBorder: '#2eb82e40',
   codeBg: '#0a0f0a',
   codeText: '#2eb82e',
+  agentBarBg: '#2eb82e',
+
+  // semantic colors
+  highlightColor: '#2eb82e',
+  subtleBg: '#2eb82e20',
 };
