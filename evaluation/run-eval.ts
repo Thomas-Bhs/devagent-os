@@ -5,6 +5,7 @@ import { debugQuestions } from './datasets/debug';
 import { qaQuestions } from './datasets/qa';
 import { uiuxQuestions } from './datasets/uiux';
 import { designerQuestions } from './datasets/designer';
+import { orchestratorQuestions } from './datasets/orchestrator';
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const BASE_URL = process.env.EVAL_URL || 'http://localhost:3000';
@@ -40,6 +41,12 @@ const agentConfig = [
     route: '/api/agents/designer',
     questions: designerQuestions,
     outputFile: `evaluation/results/${MODEL}-designer.json`,
+  },
+  {
+    name: 'orchestrator',
+    route: '/api/agents/orchestrator',
+    questions: orchestratorQuestions,
+    outputFile: `evaluation/results/${MODEL}-orchestrator.json`,
   },
 ];
 
@@ -205,5 +212,5 @@ async function runAllEvals() {
 //runAllEvals().catch(console.error);
 
 //Eval just one agent
-evalAgent(agentConfig[4]).catch(console.error)
+evalAgent(agentConfig[4]).catch(console.error);
 //evalAgent(agentConfig[3]).catch(console.error);
