@@ -19,8 +19,7 @@ interface FileContent {
 
 export default function Home() {
   const { theme, setTheme, t } = useTheme();
-  const { selectedAgentId, setSelectedAgentId, selectedAgent, agentRoute } =
-    useAgent();
+  const { selectedAgentId, setSelectedAgentId, selectedAgent, agentRoute } = useAgent();
   const {
     conversations,
     activeConversationId,
@@ -101,7 +100,7 @@ export default function Home() {
             ? [{ name: `Agent ${selectedAgent.name}`, hexColor: selectedAgent.color }]
             : []
         }
-        onThemeToggle={() => setTheme( theme === 'fallout' ? 'spatial' : 'fallout')}
+        onThemeToggle={() => setTheme(theme === 'fallout' ? 'spatial' : 'fallout')}
         onClear={handleClear}
         onSettings={() => setIsSettingsOpen(true)}
       />
