@@ -4,6 +4,8 @@ import { Gauge } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
 import { formatLabel } from '@/app/lib/theme';
 import AgentChip from '../agents/AgentChip';
+import { useSession, signOut } from 'next-auth/react';
+import Image from 'next/image';
 
 interface ActiveAgent {
   name: string;
@@ -20,6 +22,7 @@ interface TopbarProps {
 export default function Topbar({ activeAgents, onThemeToggle, onClear, onSettings }: TopbarProps) {
   const { t } = useTheme();
   const isFallout = !!t.labelPrefix;
+  const { data: session } = useSession();
 
   return (
     <div
@@ -107,6 +110,31 @@ export default function Topbar({ activeAgents, onThemeToggle, onClear, onSetting
             }}
           />
         </button>
+
+        {session?.user && (
+          <div className='flex items-center gap-2'>
+            {session.user.image && (
+              <Image
+                src={session.user.image}
+                alt={session.user.name || ''}
+                width={28}
+                height={28}
+                className='rounded-full'
+              />
+            )}
+            <button
+              onClick={() => signOut()}
+              className='text-xs px-3 py-1.5 rounded-lg transition-colors'
+              style={{
+                color: t.textSecondary,
+                border: `1px solid ${t.border}`,
+                fontFamily: t.fontFamily,
+              }}
+            >
+              {formatLabel(t, 'Sign out')}
+            </button>
+          </div>
+        )}
 
         <button
           onClick={onClear}
