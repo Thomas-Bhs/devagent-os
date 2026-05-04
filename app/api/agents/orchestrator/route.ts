@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { Client } from 'langsmith';
 import { traceable } from 'langsmith/traceable';
 import { trackTokens, calculateCost } from '@/app/lib/db/tokens';
+import { checkRateLimit } from '@/app/lib/rateLimit';
 
 const anthropic = createAnthropic();
 const langsmithClient = new Client({
@@ -21,7 +22,10 @@ async function callAgent(route: string, message: string): Promise<string> {
 
     const res = await fetch(`${BASE_URL}${route}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-internal-call': 'orchestrator',
+      },
       body: JSON.stringify({
         messages: [{ role: 'user', content: message }],
       }),
@@ -52,6 +56,14 @@ export const POST = traceable(
       const { messages } = await req.json();
 
       const trimmedMessages = messages.slice(-6);
+
+      const { limited, message } = await checkRateLimit();
+      if (limited) {
+        return new Response(JSON.stringify({ error: message }), {
+          status: 429,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
 
       const result = streamText({
         model: anthropic('claude-sonnet-4-5'),

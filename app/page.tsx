@@ -40,8 +40,16 @@ export default function Home() {
     body: { fileContent },
     onError: (error) => {
       console.error('useChat error:', error);
-      if (error.message.includes('rate limit') || error.message.includes('429')) {
-        setError('Rate limit reached — wait a few seconds and try again.');
+      if (
+        error.message.includes('429') ||
+        error.message.includes('demo limit') ||
+        error.message.includes('rate limit')
+      ) {
+        setError(
+          "You've reached the demo limit of 20 messages. Contact me at bourchisthomas@gmail.com to discuss your project!"
+        );
+      } else if (error.message.includes('signed in')) {
+        setError('You must be signed in to use DevAgent OS.');
       } else if (error.message.includes('403')) {
         setError('Access denied — check your network or disable your VPN.');
       } else {

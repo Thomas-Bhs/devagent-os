@@ -5,6 +5,7 @@ import { tavily } from '@tavily/core';
 import { Client } from 'langsmith';
 import { traceable } from 'langsmith/traceable';
 import { trackTokens, calculateCost } from '@/app/lib/db/tokens';
+import { checkRateLimit } from '@/app/lib/rateLimit';
 
 const anthropic = createAnthropic();
 const langsmithClient = new Client({
@@ -17,6 +18,15 @@ export const POST = traceable(
   async (req: Request) => {
     try {
       const { messages, fileContent } = await req.json();
+
+      // Rate limiting
+      const { limited, message } = await checkRateLimit(req);
+      if (limited) {
+        return new Response(JSON.stringify({ error: message }), {
+          status: 429,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
 
       //we keep the last 6 messages to limits the tokens
       const trimmedMessages = messages.slice(-6);
