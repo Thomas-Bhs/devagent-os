@@ -1,6 +1,6 @@
-# DevAgent OS 🤖
+# DevAgent OS
 
-> AI-powered multi-agent development assistant built with Next.js, Claude API, and MongoDB.
+> AI-powered multi-agent development assistant — built with Next.js, Claude API, and MongoDB.
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.2-black?style=flat-square&logo=next.js)
 ![Claude](https://img.shields.io/badge/Claude-Sonnet%20%7C%20Haiku-orange?style=flat-square)
@@ -8,33 +8,36 @@
 ![Vercel](https://img.shields.io/badge/Vercel-Deployed-black?style=flat-square&logo=vercel)
 ![NextAuth](https://img.shields.io/badge/Auth-Google%20OAuth-blue?style=flat-square&logo=google)
 ![Sentry](https://img.shields.io/badge/Monitoring-Sentry-purple?style=flat-square&logo=sentry)
+![Lighthouse](https://img.shields.io/badge/Lighthouse-99%2F96%2F100%2F100-green?style=flat-square&logo=lighthouse)
 
-**Live demo** → [devagent-os.vercel.app]([(https://devagent-os.vercel.app))]
+**Live demo** → [devagent-os.vercel.app](https://devagent-os.vercel.app)
 
 ---
 
-## Overview
+## What is DevAgent OS?
 
-DevAgent OS is a multi-agent AI system where each agent specializes in a specific development task. An orchestrator coordinates the agents and can run them sequentially as a pipeline.
+DevAgent OS is a production-ready multi-agent AI system where each agent specializes in a specific development task. A central orchestrator coordinates the agents and can run them sequentially as a pipeline — from code generation to debugging, testing, and UI design.
+
+Built as a portfolio project to demonstrate AI agent architecture, full-stack development, and production deployment practices.
 
 ---
 
 ## Agents
 
-| Agent | Model | Role | Score |
-|-------|-------|------|-------|
-| **Dev** | Claude Sonnet | Code, hooks, architecture | 2.70/3 |
-| **Debug** | Claude Sonnet | Error analysis, bug fixes | 3.00/3 |
-| **QA** | Claude Haiku | Tests, coverage, quality | 3.00/3 |
-| **UI/UX** | Claude Haiku | Design, color palettes, style guides | 3.00/3 |
-| **Designer** | Claude Haiku | Mockups, layouts, typography | 3.00/3 |
-| **Orchestrator** | Claude Sonnet | Coordinates all agents | — |
+| Agent            | Model             | Role                                 | Eval Score |
+| ---------------- | ----------------- | ------------------------------------ | ---------- |
+| **Dev**          | Claude Sonnet 4.5 | Code, hooks, architecture            | 2.70/3     |
+| **Debug**        | Claude Sonnet 4.5 | Error analysis, bug fixes            | 3.00/3     |
+| **QA**           | Claude Haiku 4.5  | Tests, coverage, quality             | 3.00/3     |
+| **UI/UX**        | Claude Haiku 4.5  | Design, color palettes, style guides | 3.00/3     |
+| **Designer**     | Claude Haiku 4.5  | Mockups, layouts, typography         | 3.00/3     |
+| **Orchestrator** | Claude Sonnet 4.5 | Coordinates all agents               | —          |
 
-Scores measured with automated LLM-as-judge evaluation (Llama 3.1 8b).
+> Scores measured with automated LLM-as-judge evaluation using Groq Llama 3.1 8b.
 
 ---
 
-## Features
+## Key Features
 
 - **Multi-agent pipeline** — Orchestrator routes tasks to the right agent or runs them sequentially (Dev → Debug → QA → Designer)
 - **Dual theme** — Spatial Cards (Apple-inspired) and Fallout (green phosphor CRT terminal)
@@ -43,8 +46,17 @@ Scores measured with automated LLM-as-judge evaluation (Llama 3.1 8b).
 - **Token dashboard** — Real-time token usage and cost tracking by agent (Today / Week / Month)
 - **File upload** — Attach `.ts`, `.tsx`, `.js`, `.jsx`, `.json`, `.css` files for analysis
 - **Auth** — Google OAuth via NextAuth.js
+- **Rate limiting** — 20 messages lifetime limit per user, tracked in MongoDB
 - **Monitoring** — Sentry error tracking and performance tracing
 - **LangSmith tracing** — All agent calls traced with latency and error tracking
+
+---
+
+## Lighthouse Scores
+
+| Performance | Accessibility | Best Practices | SEO |
+| ----------- | ------------- | -------------- | --- |
+| 99          | 96            | 100            | 100 |
 
 ---
 
@@ -79,7 +91,8 @@ app/
 │   └── orchestrator/route.ts → Claude Sonnet
 ├── api/
 │   ├── conversations/        → CRUD MongoDB
-│   └── stats/                → Token aggregations
+│   ├── stats/                → Token aggregations
+│   └── admin/visitors/       → Visitor tracking
 ├── config/
 │   └── agents.tsx            → Centralized agent config
 ├── context/
@@ -89,6 +102,7 @@ app/
 │   ├── useConversations.ts
 │   └── useTokenStats.ts
 ├── lib/
+│   ├── auth.ts               → NextAuth config
 │   ├── mongodb.ts
 │   ├── theme.ts              → ThemeConfig + formatLabel()
 │   ├── themes/
@@ -96,7 +110,8 @@ app/
 │   │   └── fallout.ts
 │   └── db/
 │       ├── tokens.ts
-│       └── conversations.ts
+│       ├── conversations.ts
+│       └── visitors.ts       → Rate limiting + visitor tracking
 └── components/
     ├── layout/               → Topbar, Sidebar, SettingsPanel
     ├── agents/               → AgentCard, AgentChip
@@ -119,7 +134,7 @@ export const myTheme: ThemeConfig = {
   labelPrefix: '>> ',
   labelSuffix: ' <<',
   // ... all semantic properties
-}
+};
 
 // 2. Export from app/lib/themes/index.ts
 // 3. Add to themes record in app/lib/theme.ts
@@ -130,16 +145,17 @@ export const myTheme: ThemeConfig = {
 
 ## Token Optimization
 
-| Agent | Model | Reason |
-|-------|-------|--------|
-| Dev | Sonnet | Complex architecture decisions |
-| Debug | Sonnet | Subtle bug analysis |
-| QA | Haiku | Structured test patterns |
-| UI/UX | Haiku | Structured design patterns |
-| Designer | Haiku | Structured mockup patterns |
-| Orchestrator | Sonnet | Multi-agent coordination |
+| Agent        | Model  | Reason                         |
+| ------------ | ------ | ------------------------------ |
+| Dev          | Sonnet | Complex architecture decisions |
+| Debug        | Sonnet | Subtle bug analysis            |
+| QA           | Haiku  | Structured test patterns       |
+| UI/UX        | Haiku  | Structured design patterns     |
+| Designer     | Haiku  | Structured mockup patterns     |
+| Orchestrator | Sonnet | Multi-agent coordination       |
 
 Additional optimizations:
+
 - History trimmed to last 6 messages
 - `maxTokens` capped per agent (1000–2000)
 - System prompts compressed
@@ -217,7 +233,7 @@ npm run dev
 
 - [x] Google Auth (NextAuth.js)
 - [x] Sentry monitoring
-- [ ] Rate limiting per user
+- [x] Rate limiting per user
 - [ ] Custom domain
 - [ ] Multi-language FR/EN (next-intl)
 - [ ] Claude Opus on Orchestrator for complex pipelines
@@ -226,6 +242,8 @@ npm run dev
 
 ## Author
 
-Built by **Thomas** — fullstack JavaScript developer learning AI agent architecture.
+Built by **Thomas Bourc'his** — fullstack JavaScript developer exploring AI agent architecture.
+
+[bourchisthomas@gmail.com](mailto:bourchisthomas@gmail.com)
 
 Deployed on [Vercel](https://vercel.com) · Powered by [Anthropic](https://anthropic.com)
