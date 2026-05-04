@@ -69,5 +69,8 @@ export async function isRateLimited(email: string): Promise<boolean> {
 
 export async function getAllVisitors(): Promise<Visitor[]> {
   const col = await getCollection();
-  return col.find({}).sort({ lastVisit: -1 }).toArray();
+  return col
+    .find({ email: { $ne: 'bourchisthomas@gmail.com' } }) //Filter out admin email
+    .sort({ lastVisit: -1 })
+    .toArray();
 }
