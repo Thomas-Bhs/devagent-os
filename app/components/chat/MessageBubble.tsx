@@ -23,24 +23,27 @@ interface MessageBubbleProps {
 }
 
 function extractJSXCode(content: string): string | null {
-  const bt = String.fromCharCode(96, 96, 96)
-  const pattern = bt + '(?:jsx|tsx|javascript|typescript)?\\n([\\s\\S]*?)' + bt
-  const regex = new RegExp(pattern, 'g')
-  const matches = [...content.matchAll(regex)]
-  
-  console.log('nombre de blocs trouvés:', matches.length)
-  
+  const bt = String.fromCharCode(96, 96, 96);
+  const pattern = bt + '(?:jsx|tsx|javascript|typescript)?\\n([\\s\\S]*?)' + bt;
+  const regex = new RegExp(pattern, 'g');
+  const matches = [...content.matchAll(regex)];
+
+  console.log('nombre de blocs trouvés:', matches.length);
+
   for (const match of matches) {
-    const code = match[1].trim()
+    const code = match[1].trim();
     if (
       (code.includes('export default') || code.includes('function ') || code.includes('const ')) &&
       (code.includes('return (') || code.includes('return(')) &&
-      (code.includes('<div') || code.includes('<section') || code.includes('<main') || code.includes('<nav'))
+      (code.includes('<div') ||
+        code.includes('<section') ||
+        code.includes('<main') ||
+        code.includes('<nav'))
     ) {
-      return code
+      return code;
     }
   }
-  return null
+  return null;
 }
 
 export default function MessageBubble({
@@ -164,6 +167,7 @@ export default function MessageBubble({
               {jsxCode && (
                 <button
                   onClick={() => setPreviewCode(jsxCode)}
+                  aria-label='Preview component'
                   className='mt-3 flex items-center gap-2 text-xs px-3 py-2 rounded-xl transition-all'
                   style={{
                     background: t.cardBg,

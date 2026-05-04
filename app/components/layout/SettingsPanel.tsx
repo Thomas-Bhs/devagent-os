@@ -50,6 +50,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             </h2>
             <button
               onClick={onClose}
+              aria-label="Close settings panel"
               className='w-7 h-7 flex items-center justify-center rounded-lg transition-colors text-lg'
               style={{ color: t.textSecondary }}
             >

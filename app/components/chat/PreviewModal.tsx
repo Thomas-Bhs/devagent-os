@@ -74,6 +74,7 @@ export default function PreviewModal({ code, onClose }: PreviewModalProps) {
               </button>
               <button
                 onClick={onClose}
+                aria-label='Close preview'
                 className='w-7 h-7 flex items-center justify-center rounded-lg'
                 style={{ color: t.textSecondary }}
               >

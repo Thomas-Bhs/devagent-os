@@ -68,6 +68,7 @@ export default function ChatInput({
           </span>
           <button
             onClick={() => onFileChange(null)}
+            aria-label='Remove file'
             className='text-sm leading-none ml-1'
             style={{ color: t.userBubbleText, opacity: 0.5 }}
           >
@@ -94,6 +95,7 @@ export default function ChatInput({
         />
 
         <label
+          aria-label='Upload file'
           className='cursor-pointer flex items-center justify-center w-11 h-11 rounded-2xl transition-colors'
           style={{
             background: t.surface,
@@ -134,6 +136,7 @@ export default function ChatInput({
         <button
           type='submit'
           disabled={isLoading || !input.trim()}
+          aria-label='Send message'
           className='w-11 h-11 flex items-center justify-center rounded-2xl transition-all disabled:opacity-30 disabled:cursor-not-allowed'
           style={{
             background: t.accent,

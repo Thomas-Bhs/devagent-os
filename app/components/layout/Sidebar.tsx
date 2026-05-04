@@ -83,6 +83,7 @@ export default function Sidebar({
         </p>
         <button
           onClick={onNewConversation}
+          aria-label='New conversation'
           className='text-[10px] font-semibold px-2.5 py-1 rounded-lg transition-colors'
           style={{
             background: t.accent,
@@ -139,6 +140,7 @@ export default function Sidebar({
                     e.stopPropagation();
                     onDeleteConversation(conv.id);
                   }}
+                  aria-label='Delete conversation'
                   className='opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg'
                 >
                   <svg width='12' height='12' viewBox='0 0 12 12' fill='none'>

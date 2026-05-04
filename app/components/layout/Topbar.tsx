@@ -91,6 +91,7 @@ export default function Topbar({ activeAgents, onThemeToggle, onClear, onSetting
       <div className='flex items-center gap-3'>
         <button
           onClick={onSettings}
+          aria-label='Open settings'
           className='w-8 h-8 flex items-center justify-center rounded-xl transition-colors'
           style={{ color: t.textSecondary }}
         >
@@ -99,6 +100,7 @@ export default function Topbar({ activeAgents, onThemeToggle, onClear, onSetting
 
         <button
           onClick={onThemeToggle}
+          aria-label='Toggle theme'
           className='w-9 h-5 rounded-full relative transition-colors duration-200'
           style={{ background: isFallout ? t.border : '#e5e7eb' }}
         >

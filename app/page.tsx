@@ -118,7 +118,7 @@ export default function Home() {
           onDeleteAllConversations={handleDeleteAllConversations}
         />
 
-        <div className='flex flex-col flex-1 overflow-hidden' style={{ background: t.bg }}>
+        <main className='flex flex-col flex-1 overflow-hidden' style={{ background: t.bg }}>
           <div
             className='flex-1 overflow-hidden flex flex-col mx-4 my-4 rounded-3xl shadow-sm'
             style={{
@@ -132,6 +132,7 @@ export default function Home() {
                 <p className='text-xs text-red-500'>{error}</p>
                 <button
                   onClick={() => setError(null)}
+                  aria-label='Close error'
                   className='text-red-300 hover:text-red-500 text-sm ml-3'
                 >
                   ×
@@ -147,7 +148,7 @@ export default function Home() {
               onFileChange={setFileContent}
             />
           </div>
-        </div>
+        </main>
       </div>
 
       <SettingsPanel isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
