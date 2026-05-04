@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { Client } from 'langsmith';
 import { traceable } from 'langsmith/traceable';
 import { trackTokens, calculateCost } from '@/app/lib/db/tokens';
+import { checkRateLimit } from '@/app/lib/rateLimit';
 
 const anthropic = createAnthropic();
 const langsmithClient = new Client({
@@ -17,6 +18,14 @@ export const POST = traceable(
     try {
       const { messages, fileContent } = await req.json();
       const trimmedMessages = messages.slice(-6);
+
+      const { limited, message } = await checkRateLimit(req);
+      if (limited) {
+        return new Response(JSON.stringify({ error: message }), {
+          status: 429,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
 
       const baseSystem = `Tu es un expert en design et création de maquettes pour les applications web et mobile (React, Next.js, React Native).
 
