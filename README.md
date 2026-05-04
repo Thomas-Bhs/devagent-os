@@ -9,7 +9,7 @@
 ![NextAuth](https://img.shields.io/badge/Auth-Google%20OAuth-blue?style=flat-square&logo=google)
 ![Sentry](https://img.shields.io/badge/Monitoring-Sentry-purple?style=flat-square&logo=sentry)
 
-**Live demo** → [agent-dev-delta.vercel.app](https://agent-dev-delta.vercel.app)
+**Live demo** → [devagent-os.vercel.app]([(https://devagent-os.vercel.app))]
 
 ---
 
