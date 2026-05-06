@@ -37,7 +37,17 @@ export const spatialTheme: ThemeConfig = {
   codeText: '#f0f0f0',
   agentBarBg: '', //use agentColors for this
 
-  //semantic colors
+  //Semantic colors
   highlightColor: '#0f0f1a',
   subtleBg: '#f3f4f6',
+
+  // Pricing page
+  pricingTitle: 'Choose your plan',
+  pricingSubtitle: 'Start with a 7-day free trial. Cancel anytime.',
+  pricingPopularLabel: 'Most popular',
+  pricingAgentsLabel: 'Agents',
+  pricingCtaLabel: 'Get started',
+  pricingCtaLoadingLabel: 'Loading...',
+  pricingFooterNote: 'Secure payment powered by Stripe · Cancel anytime',
+  pricingCheckIcon: '✓',
 };
