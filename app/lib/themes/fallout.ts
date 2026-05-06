@@ -46,4 +46,8 @@ export const falloutTheme: ThemeConfig = {
   pricingCtaLoadingLabel: 'PROCESSING...',
   pricingFooterNote: '[ SECURE PAYMENT PROCESSED BY VAULT-TEC FINANCIAL ]',
   pricingCheckIcon: '►',
+
+  // Animations pricing
+  pricingCardHoverShadow: '0 0 24px #2eb82e40',
+  pricingGlowAnimation: true,
 };

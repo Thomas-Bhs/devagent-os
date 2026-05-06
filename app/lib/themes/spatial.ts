@@ -43,11 +43,15 @@ export const spatialTheme: ThemeConfig = {
 
   // Pricing page
   pricingTitle: 'Choose your plan',
-  pricingSubtitle: 'Start with a 7-day free trial. Cancel anytime.',
+  pricingSubtitle: 'Cancel anytime.',
   pricingPopularLabel: 'Most popular',
   pricingAgentsLabel: 'Agents',
   pricingCtaLabel: 'Get started',
   pricingCtaLoadingLabel: 'Loading...',
   pricingFooterNote: 'Secure payment powered by Stripe · Cancel anytime',
   pricingCheckIcon: '✓',
+
+  // Animations pricing
+  pricingCardHoverShadow: '0 8px 32px rgba(0,0,0,0.12)',
+  pricingGlowAnimation: false,
 };

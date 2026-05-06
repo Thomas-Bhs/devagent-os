@@ -42,7 +42,6 @@ export interface ThemeConfig {
   highlightColor: string;
   subtleBg: string;
 
-  //Pricing page
   // Pricing page
   pricingTitle: string;
   pricingSubtitle: string;
@@ -52,6 +51,10 @@ export interface ThemeConfig {
   pricingCtaLoadingLabel: string;
   pricingFooterNote: string;
   pricingCheckIcon: string;
+
+  // Animations pricing
+  pricingCardHoverShadow: string;
+  pricingGlowAnimation: boolean;
 }
 
 export type Theme = 'spatial' | 'fallout';
