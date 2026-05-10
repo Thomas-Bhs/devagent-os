@@ -18,7 +18,7 @@ interface FileContent {
 }
 
 export default function Home() {
-  const { theme, setTheme, t } = useTheme();
+  const { t } = useTheme();
   const { selectedAgentId, setSelectedAgentId, selectedAgent, agentRoute } = useAgent();
   const {
     conversations,
@@ -108,11 +108,10 @@ export default function Home() {
             ? [{ name: `Agent ${selectedAgent.name}`, hexColor: selectedAgent.color }]
             : []
         }
-        onThemeToggle={() => setTheme(theme === 'fallout' ? 'spatial' : 'fallout')}
         onClear={handleClear}
         onSettings={() => setIsSettingsOpen(true)}
       />
-
+      
       <div className='flex flex-1 overflow-hidden'>
         <Sidebar
           agents={AGENTS}
