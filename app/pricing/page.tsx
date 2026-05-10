@@ -3,6 +3,7 @@
 import { useTheme } from '@/app/context/ThemeContext';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import { PLANS } from '@/app/lib/plans';
 import { PlanId } from '@/app/types/subscription';
@@ -43,6 +44,15 @@ export default function PricingPage() {
       className='min-h-screen py-16 px-4'
       style={{ backgroundColor: t.bg, fontFamily: t.fontFamily }}
     >
+      <button
+        onClick={() => router.back()}
+        className='flex items-center gap-2 mb-8 text-sm transition-opacity hover:opacity-70'
+        style={{ color: t.textSecondary, fontFamily: t.fontFamily }}
+      >
+        <ArrowLeft size={16} />
+        {t.pricingGlowAnimation ? '< BACK_' : 'Back'}
+      </button>
+      
       {/* Header */}
       <div className='text-center mb-12'>
         <h1
