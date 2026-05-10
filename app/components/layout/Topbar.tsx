@@ -19,9 +19,10 @@ interface TopbarProps {
   activeAgents: ActiveAgent[];
   onClear: () => void;
   onSettings: () => void;
+  onMenuToggle: () => void;
 }
 
-export default function Topbar({ activeAgents, onClear, onSettings }: TopbarProps) {
+export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle }: TopbarProps) {
   const { t, theme, setTheme } = useTheme();
   const isFallout = !!t.labelPrefix;
   const { data: session } = useSession();
@@ -57,6 +58,22 @@ export default function Topbar({ activeAgents, onClear, onSettings }: TopbarProp
     >
       {/* LEFT — Logo + agents actifs */}
       <div className='flex items-center gap-4'>
+        {/* Burger — mobile only */}
+        <button
+          onClick={onMenuToggle}
+          aria-label='Toggle menu'
+          className='md:hidden w-8 h-8 flex items-center justify-center rounded-xl transition-colors'
+          style={{ color: t.text }}
+        >
+          <svg width='18' height='18' viewBox='0 0 18 18' fill='none'>
+            <path
+              d='M2 4h14M2 9h14M2 14h14'
+              stroke='currentColor'
+              strokeWidth='1.5'
+              strokeLinecap='round'
+            />
+          </svg>
+        </button>
         <div className='flex items-center gap-2.5'>
           <div
             className='w-8 h-8 rounded-xl flex items-center justify-center'

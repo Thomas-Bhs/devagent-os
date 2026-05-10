@@ -34,6 +34,7 @@ export default function Home() {
   const [fileContent, setFileContent] = useState<FileContent | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const { messages, input, handleInputChange, handleSubmit, isLoading, setMessages } = useChat({
     api: agentRoute,
@@ -110,14 +111,17 @@ export default function Home() {
         }
         onClear={handleClear}
         onSettings={() => setIsSettingsOpen(true)}
+        onMenuToggle={() => setIsSidebarOpen(true)}
       />
-      
+
       <div className='flex flex-1 overflow-hidden'>
         <Sidebar
           agents={AGENTS}
           selectedAgentId={selectedAgentId}
           conversations={conversations}
           activeConversationId={activeConversationId}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
           onAgentSelect={handleAgentSelect}
           onConversationSelect={handleConversationSelect}
           onNewConversation={handleNewConversation}
