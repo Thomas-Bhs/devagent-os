@@ -52,7 +52,7 @@ export default function PricingPage() {
         <ArrowLeft size={16} />
         {t.pricingGlowAnimation ? '< BACK_' : 'Back'}
       </button>
-      
+
       {/* Header */}
       <div className='text-center mb-12'>
         <h1
@@ -82,10 +82,10 @@ export default function PricingPage() {
               }`}
               style={{
                 backgroundColor: t.cardBg,
-                border: `1px solid ${t.cardBorder}`,
+                border: `1px solid ${isHovered ? t.text : t.cardBorder}`,
                 transform:
                   !t.pricingGlowAnimation && isHovered ? 'translateY(-6px)' : 'translateY(0)',
-                boxShadow: isHovered ? t.pricingCardHoverShadow : 'none',
+                boxShadow: isHovered ? t.pricingCardHoverShadow : '0 1px 4px rgba(0,0,0,0.06)',
               }}
             >
               {/* Badge Popular */}
@@ -155,7 +155,7 @@ export default function PricingPage() {
                   <li
                     key={feature}
                     className='flex items-center gap-2 text-sm'
-                    style={{ color: t.textSecondary }}
+                    style={{ color: t.text }}
                   >
                     <span
                       className={t.pricingGlowAnimation ? 'fallout-blink' : ''}
@@ -174,9 +174,9 @@ export default function PricingPage() {
                 disabled={loadingPlan !== null}
                 className='w-full py-3 rounded-lg font-semibold text-sm transition-all duration-200'
                 style={{
-                  backgroundColor: t.subtleBg,
-                  color: t.text,
-                  border: `1px solid ${isHovered ? t.accent : t.cardBorder}`,
+                  backgroundColor: t.accent,
+                  color: t.bg,
+                  border: `2px solid ${t.text}`,
                   opacity: loadingPlan !== null ? 0.6 : 1,
                   cursor: loadingPlan !== null ? 'not-allowed' : 'pointer',
                   boxShadow:

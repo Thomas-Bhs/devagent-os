@@ -21,7 +21,7 @@ export const spatialTheme: ThemeConfig = {
 
   // Components
   cardBg: '#f9fafb',
-  cardBorder: 'transparent',
+  cardBorder: '#e5e7eb',
   inputBg: '#f9fafb',
   sectionLabelColor: '#9ca3af',
   pillBg: '#f3f4f6',
