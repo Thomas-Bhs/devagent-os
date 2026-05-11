@@ -1,3 +1,5 @@
+import { NextResponse } from 'next/server';
+
 export type PlanId = 'starter' | 'pro' | 'expert';
 
 export type SubscriptionStatus = 'active' | 'past_due' | 'canceled' | 'trialing' | 'incomplete';
@@ -31,4 +33,10 @@ export interface PlanConfig {
   agents: string[];
   features: string[];
   isPopular?: boolean;
+}
+
+export interface GuardResult {
+  authorized: boolean;
+  response?: NextResponse;
+  userId?: string;
 }
