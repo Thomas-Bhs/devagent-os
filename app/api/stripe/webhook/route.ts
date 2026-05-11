@@ -46,7 +46,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     plan: planId as 'starter' | 'pro' | 'expert',
     status: subscription.status as 'active' | 'trialing',
     currentPeriodEnd: new Date(
-      (subscription as unknown as { current_period_end: number }).current_period_end * 1000
+      (subscription.items.data[0] as unknown as { current_period_end: number }).current_period_end *
+        1000
     ),
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
   });
@@ -66,7 +67,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
     plan: plan?.id ?? 'starter',
     status: subscription.status as 'active' | 'past_due' | 'canceled' | 'trialing',
     currentPeriodEnd: new Date(
-      (subscription as unknown as { current_period_end: number }).current_period_end * 1000
+      (subscription.items.data[0] as unknown as { current_period_end: number }).current_period_end * 1000
     ),
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
   });
