@@ -3,6 +3,12 @@ import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
 export async function proxy(request: NextRequest) {
+
+  // Stripe webhook — bypass auth
+  if (request.nextUrl.pathname === '/api/stripe/webhook') {
+    return NextResponse.next();
+  }
+  
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
 
   const isAuthPage = request.nextUrl.pathname.startsWith('/auth');
