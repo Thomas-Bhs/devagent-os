@@ -36,4 +36,18 @@ export const falloutTheme: ThemeConfig = {
   // semantic colors
   highlightColor: '#2eb82e',
   subtleBg: '#2eb82e20',
+
+  //Pricing page
+  pricingTitle: '>> SUBSCRIPTION PLANS <<',
+  pricingSubtitle: 'SELECT ACCESS LEVEL TO CONTINUE',
+  pricingPopularLabel: '★ MOST POPULAR ★',
+  pricingAgentsLabel: '>> AGENTS',
+  pricingCtaLabel: 'INITIATE SUBSCRIPTION',
+  pricingCtaLoadingLabel: 'PROCESSING...',
+  pricingFooterNote: '[ SECURE PAYMENT PROCESSED BY VAULT-TEC FINANCIAL ]',
+  pricingCheckIcon: '►',
+
+  // Animations pricing
+  pricingCardHoverShadow: '0 0 24px #2eb82e40',
+  pricingGlowAnimation: true,
 };

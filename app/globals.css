@@ -41,3 +41,43 @@ body {
 .fallout-selected {
   animation: border-pulse 1.5s ease-in-out infinite;
 }
+
+/* Fallout — text pulse */
+@keyframes fallout-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Fallout — border pulse on hover */
+@keyframes fallout-hover-border {
+  0%,
+  100% {
+    border-color: #2eb82e;
+    box-shadow: 0 0 12px #2eb82e60, 0 0 24px #2eb82e30;
+  }
+  50% {
+    border-color: #1a5c1a;
+    box-shadow: 0 0 4px #2eb82e20;
+  }
+}
+
+.fallout-blink {
+  animation: fallout-blink 1.2s ease-in-out infinite;
+}
+
+.fallout-hover-card {
+  animation: fallout-hover-border 0.8s ease-in-out infinite;
+}
+
+.spatial-shimmer {
+  background: linear-gradient(90deg, #0f0f1a 0%, #404040 50%, #0f0f1a 100%);
+  background-size: 200% auto;
+  animation: shimmer 2.5s linear infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

@@ -6,6 +6,9 @@ import { formatLabel } from '@/app/lib/theme';
 import AgentChip from '../agents/AgentChip';
 import { useSession, signOut } from 'next-auth/react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useState, useRef, useEffect } from 'react';
+import type { Theme } from '@/app/lib/theme';
 
 interface ActiveAgent {
   name: string;
@@ -14,15 +17,35 @@ interface ActiveAgent {
 
 interface TopbarProps {
   activeAgents: ActiveAgent[];
-  onThemeToggle: () => void;
   onClear: () => void;
   onSettings: () => void;
+  onMenuToggle: () => void;
 }
 
-export default function Topbar({ activeAgents, onThemeToggle, onClear, onSettings }: TopbarProps) {
-  const { t } = useTheme();
+export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle }: TopbarProps) {
+  const { t, theme, setTheme } = useTheme();
   const isFallout = !!t.labelPrefix;
   const { data: session } = useSession();
+  const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+        setSettingsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const themes: { id: Theme; label: string }[] = [
+    { id: 'spatial', label: 'Spatial' },
+    { id: 'fallout', label: 'Fallout' },
+  ];
 
   return (
     <div
@@ -32,7 +55,25 @@ export default function Topbar({ activeAgents, onThemeToggle, onClear, onSetting
         borderBottom: `1px solid ${t.border}`,
       }}
     >
+      {/* LEFT — Logo + agents actifs */}
       <div className='flex items-center gap-4'>
+        {/* Burger — mobile only */}
+        <button
+          onClick={onMenuToggle}
+          aria-label='Toggle menu'
+          className='md:hidden w-8 h-8 flex items-center justify-center rounded-xl transition-colors'
+          style={{ color: t.text }}
+        >
+          <svg width='18' height='18' viewBox='0 0 18 18' fill='none'>
+            <path
+              d='M2 4h14M2 9h14M2 14h14'
+              stroke='currentColor'
+              strokeWidth='1.5'
+              strokeLinecap='round'
+            />
+          </svg>
+        </button>
+
         <div className='flex items-center gap-2.5'>
           <div
             className='w-8 h-8 rounded-xl flex items-center justify-center'
@@ -88,7 +129,9 @@ export default function Topbar({ activeAgents, onThemeToggle, onClear, onSetting
         </div>
       </div>
 
+      {/* RIGHT — Gauge + Clear + Avatar menu */}
       <div className='flex items-center gap-3'>
+        {/* Settings gauge */}
         <button
           onClick={onSettings}
           aria-label='Open settings'
@@ -98,46 +141,7 @@ export default function Topbar({ activeAgents, onThemeToggle, onClear, onSetting
           <Gauge size={15} />
         </button>
 
-        <button
-          onClick={onThemeToggle}
-          aria-label='Toggle theme'
-          className='w-9 h-5 rounded-full relative transition-colors duration-200'
-          style={{ background: isFallout ? t.border : '#e5e7eb' }}
-        >
-          <div
-            className='w-4 h-4 rounded-full absolute top-0.5 transition-transform duration-200 shadow-sm'
-            style={{
-              background: isFallout ? t.bg : 'white',
-              transform: isFallout ? 'translateX(16px)' : 'translateX(2px)',
-            }}
-          />
-        </button>
-
-        {session?.user && (
-          <div className='flex items-center gap-2'>
-            {session.user.image && (
-              <Image
-                src={session.user.image}
-                alt={session.user.name || ''}
-                width={28}
-                height={28}
-                className='rounded-full'
-              />
-            )}
-            <button
-              onClick={() => signOut()}
-              className='text-xs px-3 py-1.5 rounded-lg transition-colors'
-              style={{
-                color: t.textSecondary,
-                border: `1px solid ${t.border}`,
-                fontFamily: t.fontFamily,
-              }}
-            >
-              {formatLabel(t, 'Sign out')}
-            </button>
-          </div>
-        )}
-
+        {/* Clear */}
         <button
           onClick={onClear}
           className='text-xs px-3 py-1.5 rounded-lg transition-colors'
@@ -149,6 +153,178 @@ export default function Topbar({ activeAgents, onThemeToggle, onClear, onSetting
         >
           {formatLabel(t, 'Clear')}
         </button>
+
+        {/* Avatar + dropdown menu */}
+        {session?.user && (
+          <div className='relative' ref={menuRef}>
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label='Open user menu'
+              className='flex items-center justify-center rounded-full overflow-hidden transition-opacity hover:opacity-80'
+            >
+              {session.user.image ? (
+                <Image
+                  src={session.user.image}
+                  alt={session.user.name || ''}
+                  width={28}
+                  height={28}
+                  className='rounded-full'
+                />
+              ) : (
+                <div
+                  className='w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold'
+                  style={{ backgroundColor: t.accent, color: t.bg }}
+                >
+                  {session.user.name?.[0] ?? '?'}
+                </div>
+              )}
+            </button>
+
+            {/* Dropdown */}
+            {menuOpen && (
+              <div
+                className='absolute right-0 top-10 w-56 rounded-xl shadow-lg z-50 overflow-hidden'
+                style={{
+                  backgroundColor: t.surface,
+                  border: `1px solid ${t.border}`,
+                }}
+              >
+                {/* Email */}
+                <div className='px-4 py-3 border-b' style={{ borderColor: t.border }}>
+                  <p
+                    className='text-xs truncate'
+                    style={{ color: t.textSecondary, fontFamily: t.fontFamily }}
+                  >
+                    {session.user.email}
+                  </p>
+                </div>
+
+                {/* Pricing */}
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    router.push('/pricing');
+                  }}
+                  className='w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors hover:opacity-80'
+                  style={{ color: t.text, fontFamily: t.fontFamily }}
+                >
+                  <span>💳</span>
+                  <span>{isFallout ? 'PRICING_' : 'Pricing'}</span>
+                </button>
+
+                {/* Billing */}
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    router.push('/billing');
+                  }}
+                  className='w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors hover:opacity-80'
+                  style={{ color: t.text, fontFamily: t.fontFamily }}
+                >
+                  <span>📊</span>
+                  <span>{isFallout ? 'BILLING_' : 'Billing'}</span>
+                </button>
+
+                {/* Manage subscription */}
+                <button
+                  onClick={async () => {
+                    setMenuOpen(false);
+                    const res = await fetch('/api/stripe/portal', { method: 'POST' });
+                    const data = await res.json();
+                    if (data.url) window.location.href = data.url;
+                  }}
+                  className='w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors hover:opacity-80'
+                  style={{ color: t.text, fontFamily: t.fontFamily }}
+                >
+                  <span>🔧</span>
+                  <span>{isFallout ? 'MANAGE_SUBSCRIPTION_' : 'Manage subscription'}</span>
+                </button>
+
+                <div className='h-px mx-4' style={{ backgroundColor: t.border }} />
+
+                {/* Settings — Theme + Delete account */}
+                <div>
+                  <button
+                    onClick={() => setSettingsOpen(!settingsOpen)}
+                    className='w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors hover:opacity-80'
+                    style={{ color: t.text, fontFamily: t.fontFamily }}
+                  >
+                    <div className='flex items-center gap-3'>
+                      <span>⚙️</span>
+                      <span>{isFallout ? 'SETTINGS_' : 'Settings'}</span>
+                    </div>
+                    <span style={{ color: t.textSecondary }}>{settingsOpen ? '▲' : '▼'}</span>
+                  </button>
+
+                  {/* Submenu */}
+                  {settingsOpen && (
+                    <div className='px-4 pb-2' style={{ backgroundColor: t.subtleBg }}>
+                      {/* Theme */}
+                      <p
+                        className='text-[10px] uppercase font-semibold pt-2 pb-1.5'
+                        style={{ color: t.textSecondary, fontFamily: t.fontFamily }}
+                      >
+                        {isFallout ? 'THEME_' : 'Theme'}
+                      </p>
+                      {themes.map((th) => (
+                        <button
+                          key={th.id}
+                          onClick={() => {
+                            setTheme(th.id);
+                            setMenuOpen(false);
+                            setSettingsOpen(false);
+                          }}
+                          className='w-full flex items-center gap-2 py-1.5 text-sm transition-colors'
+                          style={{
+                            color: theme === th.id ? t.accent : t.textSecondary,
+                            fontFamily: t.fontFamily,
+                          }}
+                        >
+                          <span style={{ color: t.accent }}>{theme === th.id ? '●' : '○'}</span>
+                          {th.label}
+                        </button>
+                      ))}
+
+                      {/* Séparateur */}
+                      <div className='h-px my-2' style={{ backgroundColor: t.border }} />
+
+                      {/* Delete account */}
+                      <button
+                        onClick={async () => {
+                          setMenuOpen(false);
+                          setSettingsOpen(false);
+                          if (!confirm('Are you sure? This action cannot be undone.')) return;
+                          const res = await fetch('/api/user/delete', { method: 'DELETE' });
+                          if (res.ok) {
+                            const { signOut } = await import('next-auth/react');
+                            await signOut({ callbackUrl: '/auth/signin' });
+                          }
+                        }}
+                        className='w-full flex items-center gap-2 py-1.5 text-sm transition-colors'
+                        style={{ color: '#dc2626', fontFamily: t.fontFamily }}
+                      >
+                        <span>🗑️</span>
+                        <span>{isFallout ? 'DELETE_ACCOUNT_' : 'Delete account'}</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className='h-px mx-4' style={{ backgroundColor: t.border }} />
+
+                {/* Sign out */}
+                <button
+                  onClick={() => signOut()}
+                  className='w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:opacity-80'
+                  style={{ color: t.textSecondary, fontFamily: t.fontFamily }}
+                >
+                  <span>↩</span>
+                  <span>{isFallout ? 'SIGN_OUT_' : 'Sign out'}</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

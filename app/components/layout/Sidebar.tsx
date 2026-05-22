@@ -18,6 +18,8 @@ interface SidebarProps {
   selectedAgentId: string;
   conversations: Conversation[];
   activeConversationId: string;
+  isOpen: boolean;
+  onClose: () => void;
   onAgentSelect: (id: string) => void;
   onConversationSelect: (id: string) => void;
   onNewConversation: () => void;
@@ -30,6 +32,8 @@ export default function Sidebar({
   selectedAgentId,
   conversations,
   activeConversationId,
+  isOpen,
+  onClose,
   onAgentSelect,
   onConversationSelect,
   onNewConversation,
@@ -39,9 +43,9 @@ export default function Sidebar({
   const { t } = useTheme();
   const isFallout = !!t.labelPrefix;
 
-  return (
+  const sidebarContent = (
     <div
-      className='w-64 flex flex-col overflow-hidden flex-shrink-0'
+      className='w-64 h-full flex flex-col overflow-hidden flex-shrink-0'
       style={{
         background: t.surface,
         borderRight: `1px solid ${t.border}`,
@@ -65,7 +69,10 @@ export default function Sidebar({
               badge={agent.badge}
               isSelected={selectedAgentId === agent.id}
               isDisabled={agent.isDisabled}
-              onClick={() => onAgentSelect(agent.id)}
+              onClick={() => {
+                onAgentSelect(agent.id);
+                onClose(); // ferme la sidebar sur mobile après sélection
+              }}
               agentId={agent.id}
             />
           ))}
@@ -85,11 +92,7 @@ export default function Sidebar({
           onClick={onNewConversation}
           aria-label='New conversation'
           className='text-[10px] font-semibold px-2.5 py-1 rounded-lg transition-colors'
-          style={{
-            background: t.accent,
-            color: t.bg,
-            fontFamily: t.fontFamily,
-          }}
+          style={{ background: t.accent, color: t.bg, fontFamily: t.fontFamily }}
         >
           + New
         </button>
@@ -108,7 +111,10 @@ export default function Sidebar({
             {conversations.map((conv) => (
               <div
                 key={conv.id}
-                onClick={() => onConversationSelect(conv.id)}
+                onClick={() => {
+                  onConversationSelect(conv.id);
+                  onClose();
+                }}
                 className='px-3 py-2.5 rounded-xl cursor-pointer flex items-center gap-2 mb-1 transition-colors group'
                 style={{
                   background: activeConversationId === conv.id ? t.userBubbleBg : 'transparent',
@@ -155,7 +161,6 @@ export default function Sidebar({
                 </button>
               </div>
             ))}
-
             <button
               onClick={onDeleteAllConversations}
               className='w-full mt-2 text-[10px] py-1.5 rounded-lg transition-colors'
@@ -167,5 +172,22 @@ export default function Sidebar({
         )}
       </div>
     </div>
+  );
+
+  return (
+    <>
+      {/* Desktop — sidebar visible */}
+      <div className='hidden md:flex'>{sidebarContent}</div>
+
+      {/* Mobile — drawer overlay */}
+      {isOpen && (
+        <div className='md:hidden fixed inset-0 z-50 flex'>
+          {/* Overlay sombre */}
+          <div className='absolute inset-0 bg-black/50' onClick={onClose} />
+          {/* Sidebar */}
+          <div className='relative z-10 h-full'>{sidebarContent}</div>
+        </div>
+      )}
+    </>
   );
 }

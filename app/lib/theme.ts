@@ -39,8 +39,22 @@ export interface ThemeConfig {
   agentBarBg: string;
 
   // semantic colors
-  highlightColor: string  
-  subtleBg: string 
+  highlightColor: string;
+  subtleBg: string;
+
+  // Pricing page
+  pricingTitle: string;
+  pricingSubtitle: string;
+  pricingPopularLabel: string;
+  pricingAgentsLabel: string;
+  pricingCtaLabel: string;
+  pricingCtaLoadingLabel: string;
+  pricingFooterNote: string;
+  pricingCheckIcon: string;
+
+  // Animations pricing
+  pricingCardHoverShadow: string;
+  pricingGlowAnimation: boolean;
 }
 
 export type Theme = 'spatial' | 'fallout';

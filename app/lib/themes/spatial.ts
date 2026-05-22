@@ -9,7 +9,7 @@ export const spatialTheme: ThemeConfig = {
   surface: '#ffffff',
   border: '#e0e0eb',
   text: '#0f0f1a',
-  textSecondary: '#6b7280',
+  textSecondary: '#4b5563',
   accent: '#0f0f1a',
 
   // Typography
@@ -21,9 +21,9 @@ export const spatialTheme: ThemeConfig = {
 
   // Components
   cardBg: '#f9fafb',
-  cardBorder: 'transparent',
+  cardBorder: '#e5e7eb',
   inputBg: '#f9fafb',
-  sectionLabelColor: '#9ca3af',
+  sectionLabelColor: '#6b7280',
   pillBg: '#f3f4f6',
   pillRunningBg: '#3b82f6',
   pillRunningText: '#ffffff',
@@ -37,7 +37,21 @@ export const spatialTheme: ThemeConfig = {
   codeText: '#f0f0f0',
   agentBarBg: '', //use agentColors for this
 
-  //semantic colors
+  //Semantic colors
   highlightColor: '#0f0f1a',
   subtleBg: '#f3f4f6',
+
+  // Pricing page
+  pricingTitle: 'Choose your plan',
+  pricingSubtitle: 'Cancel anytime.',
+  pricingPopularLabel: 'Most popular',
+  pricingAgentsLabel: 'Agents',
+  pricingCtaLabel: 'Get started',
+  pricingCtaLoadingLabel: 'Loading...',
+  pricingFooterNote: 'Secure payment powered by Stripe · Cancel anytime',
+  pricingCheckIcon: '✓',
+
+  // Animations pricing
+  pricingCardHoverShadow: '0 8px 32px rgba(0,0,0,0.12)',
+  pricingGlowAnimation: false,
 };

@@ -6,6 +6,7 @@ import { Client } from 'langsmith';
 import { traceable } from 'langsmith/traceable';
 import { trackTokens, calculateCost } from '@/app/lib/db/tokens';
 import { checkRateLimit } from '@/app/lib/rateLimit';
+import { checkAgentAccess } from '@/app/lib/guards/agentGuard';
 
 const anthropic = createAnthropic();
 const langsmithClient = new Client({
@@ -18,6 +19,10 @@ export const POST = traceable(
   async (req: Request) => {
     try {
       const { messages, fileContent } = await req.json();
+
+      //agent access control
+      const guard = await checkAgentAccess('dev');
+      if (!guard.authorized) return guard.response!;
 
       // Rate limiting
       const { limited, message } = await checkRateLimit(req);

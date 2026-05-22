@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /billing
+Disallow: /checkout/
+
+Sitemap: https://devagent-os.vercel.app/sitemap.xml

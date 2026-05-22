@@ -18,7 +18,7 @@ interface FileContent {
 }
 
 export default function Home() {
-  const { theme, setTheme, t } = useTheme();
+  const { t } = useTheme();
   const { selectedAgentId, setSelectedAgentId, selectedAgent, agentRoute } = useAgent();
   const {
     conversations,
@@ -34,6 +34,7 @@ export default function Home() {
   const [fileContent, setFileContent] = useState<FileContent | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const { messages, input, handleInputChange, handleSubmit, isLoading, setMessages } = useChat({
     api: agentRoute,
@@ -108,9 +109,9 @@ export default function Home() {
             ? [{ name: `Agent ${selectedAgent.name}`, hexColor: selectedAgent.color }]
             : []
         }
-        onThemeToggle={() => setTheme(theme === 'fallout' ? 'spatial' : 'fallout')}
         onClear={handleClear}
         onSettings={() => setIsSettingsOpen(true)}
+        onMenuToggle={() => setIsSidebarOpen(true)}
       />
 
       <div className='flex flex-1 overflow-hidden'>
@@ -119,6 +120,8 @@ export default function Home() {
           selectedAgentId={selectedAgentId}
           conversations={conversations}
           activeConversationId={activeConversationId}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
           onAgentSelect={handleAgentSelect}
           onConversationSelect={handleConversationSelect}
           onNewConversation={handleNewConversation}

@@ -1,7 +1,7 @@
 import { cn } from '@/app/lib/utils';
 import { useTheme } from '@/app/context/ThemeContext';
 import { formatLabel } from '@/app/lib/theme';
-import Image from 'next/image';
+//import Image from 'next/image';
 
 interface AgentCardProps {
   name: string;
@@ -16,9 +16,9 @@ interface AgentCardProps {
 }
 
 const badgeConfig = {
-  active: { label: 'Active', className: 'bg-emerald-50 text-emerald-600' },
-  ready: { label: 'Ready', className: 'bg-blue-50 text-blue-600' },
-  soon: { label: 'Soon', className: 'bg-gray-100 text-gray-400' },
+  active: { label: 'Active', className: 'bg-emerald-100 text-emerald-700' },
+  ready: { label: 'Ready', className: 'bg-blue-100 text-blue-700' },
+  soon: { label: 'Soon', className: 'bg-gray-100 text-gray-500' },
 };
 
 export default function AgentCard({
@@ -40,7 +40,7 @@ export default function AgentCard({
       <div
         onClick={isDisabled ? undefined : onClick}
         className={cn(
-          'p-2 rounded-2xl transition-all duration-150 relative overflow-hidden',
+          'p-2 rounded-2xl transition-all duration-150 relative',
           isDisabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:scale-105',
           isSelected ? 'fallout-selected' : ''
         )}
@@ -49,12 +49,11 @@ export default function AgentCard({
           border: `1px solid ${isSelected ? t.border : t.cardBorder}`,
         }}
       >
-        <div className='relative w-full h-28 mb-2'>
-          <Image
-            src={`/agents/${agentId}.png`}
+        <div className='w-full h-28 mb-2'>
+          <img
+            src={`/agents/${agentId}.webp`}
             alt={name}
-            fill
-            className='object-contain'
+            className='object-contain w-full h-full'
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
@@ -100,7 +99,7 @@ export default function AgentCard({
       <p
         className={cn(
           'text-[10px] leading-snug mb-2',
-          isSelected ? 'text-gray-400' : 'text-gray-400'
+          isSelected ? 'text-gray-400' : 'text-gray-500'
         )}
       >
         {description}
