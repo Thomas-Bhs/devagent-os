@@ -1,6 +1,7 @@
 import clientPromise from '@/app/lib/mongodb';
 import { Subscription, UsageTracking, SubscriptionStatus } from '@/app/types/subscription';
 import { getRequestsLimit } from '@/app/lib/plans';
+import { sendQuotaAlertEmail } from '@/app/lib/email';
 
 // Helpers
 
@@ -84,6 +85,27 @@ export async function incrementUsage(userId: string): Promise<boolean> {
     { $inc: { requestsUsed: 1 } },
     { returnDocument: 'after' }
   );
+  // Alert at 80%
+  if (result) {
+    const { requestsUsed, requestsLimit, userId } = result as unknown as UsageTracking;
+    const percent = requestsUsed / requestsLimit;
+
+    if (percent >= 0.8 && percent < 0.81) {
+      // send only one time the alert
+      import('@/app/lib/mongodb')
+        .then(async ({ default: clientPromise }) => {
+          const client = await clientPromise;
+          const db = client.db();
+          const sub = await db.collection('subscriptions').findOne({ userId });
+          const userEmail = sub?.email; // si tu stockes l'email
+
+          // Alternative : récupère l'email depuis la session
+          // Pour l'instant on log
+          console.log(`[quota] User ${userId} at ${Math.round(percent * 100)}%`);
+        })
+        .catch(console.error);
+    }
+  }
 
   return result !== null;
 }

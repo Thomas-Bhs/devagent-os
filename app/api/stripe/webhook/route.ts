@@ -6,6 +6,7 @@ import { upsertSubscription, updateSubscriptionStatus } from '@/app/lib/db/subsc
 import { getPlanByPriceId } from '@/app/lib/plans';
 import clientPromise from '@/app/lib/mongodb';
 import Stripe from 'stripe';
+import { sendWelcomeEmail, sendCancellationEmail } from '@/app/lib/email';
 
 // ─── Idempotence ───────────────────────────────────────────────
 // Stock eventId in MongoDB to ensure we process each Stripe event only once
@@ -52,6 +53,11 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
   });
 
+  sendWelcomeEmail({
+    to: session.customer_email ?? '',
+    planId,
+  }).catch(console.error);
+
   console.log(`[webhook] Subscription activated for user ${userId} — plan ${planId}`);
 }
 
@@ -67,10 +73,24 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
     plan: plan?.id ?? 'starter',
     status: subscription.status as 'active' | 'past_due' | 'canceled' | 'trialing',
     currentPeriodEnd: new Date(
-      (subscription.items.data[0] as unknown as { current_period_end: number }).current_period_end * 1000
+      (subscription.items.data[0] as unknown as { current_period_end: number }).current_period_end *
+        1000
     ),
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
   });
+
+  const customer = await stripe.customers.retrieve(subscription.customer as string);
+  const email = 'email' in customer ? customer.email : null;
+
+  if (email) {
+    sendCancellationEmail({
+      to: email,
+      currentPeriodEnd: new Date(
+        (subscription.items.data[0] as unknown as { current_period_end: number })
+          .current_period_end * 1000
+      ),
+    }).catch(console.error);
+  }
 
   console.log(`[webhook] Subscription updated — ${subscription.id}`);
 }
