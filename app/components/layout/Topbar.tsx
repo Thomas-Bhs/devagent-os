@@ -31,7 +31,6 @@ export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle
   const [settingsOpen, setSettingsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Close the menu if we clic outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -74,6 +73,7 @@ export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle
             />
           </svg>
         </button>
+
         <div className='flex items-center gap-2.5'>
           <div
             className='w-8 h-8 rounded-xl flex items-center justify-center'
@@ -242,7 +242,7 @@ export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle
 
                 <div className='h-px mx-4' style={{ backgroundColor: t.border }} />
 
-                {/* Settings — Theme */}
+                {/* Settings — Theme + Delete account */}
                 <div>
                   <button
                     onClick={() => setSettingsOpen(!settingsOpen)}
@@ -256,9 +256,10 @@ export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle
                     <span style={{ color: t.textSecondary }}>{settingsOpen ? '▲' : '▼'}</span>
                   </button>
 
-                  {/* Submenu Theme */}
+                  {/* Submenu */}
                   {settingsOpen && (
                     <div className='px-4 pb-2' style={{ backgroundColor: t.subtleBg }}>
+                      {/* Theme */}
                       <p
                         className='text-[10px] uppercase font-semibold pt-2 pb-1.5'
                         style={{ color: t.textSecondary, fontFamily: t.fontFamily }}
@@ -283,6 +284,28 @@ export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle
                           {th.label}
                         </button>
                       ))}
+
+                      {/* Séparateur */}
+                      <div className='h-px my-2' style={{ backgroundColor: t.border }} />
+
+                      {/* Delete account */}
+                      <button
+                        onClick={async () => {
+                          setMenuOpen(false);
+                          setSettingsOpen(false);
+                          if (!confirm('Are you sure? This action cannot be undone.')) return;
+                          const res = await fetch('/api/user/delete', { method: 'DELETE' });
+                          if (res.ok) {
+                            const { signOut } = await import('next-auth/react');
+                            await signOut({ callbackUrl: '/auth/signin' });
+                          }
+                        }}
+                        className='w-full flex items-center gap-2 py-1.5 text-sm transition-colors'
+                        style={{ color: '#dc2626', fontFamily: t.fontFamily }}
+                      >
+                        <span>🗑️</span>
+                        <span>{isFallout ? 'DELETE_ACCOUNT_' : 'Delete account'}</span>
+                      </button>
                     </div>
                   )}
                 </div>

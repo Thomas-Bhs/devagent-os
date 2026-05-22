@@ -13,6 +13,8 @@ export default function BillingPage() {
   const { billing, loading, error } = useBilling();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const plan = billing ? PLANS[billing.plan] : null;
   const quotaPercent = billing
@@ -31,6 +33,20 @@ export default function BillingPage() {
     const res = await fetch('/api/stripe/portal', { method: 'POST' });
     const data = await res.json();
     if (data.url) window.location.href = data.url;
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      setDeleting(true);
+      const res = await fetch('/api/user/delete', { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete account');
+      const { signOut } = await import('next-auth/react');
+      await signOut({ callbackUrl: '/auth/signin' });
+    } catch (err) {
+      console.error('[billing] Delete account error:', err);
+      setDeleting(false);
+      setShowDeleteConfirm(false);
+    }
   };
 
   return (
@@ -81,10 +97,37 @@ export default function BillingPage() {
           </div>
         )}
 
+        {/* No subscription */}
+        {!loading && !error && !billing && (
+          <div
+            className='rounded-xl p-8 text-center'
+            style={{
+              backgroundColor: t.cardBg,
+              border: `1px solid ${t.cardBorder}`,
+            }}
+          >
+            <p className='text-lg font-bold mb-2' style={{ color: t.text }}>
+              {t.pricingGlowAnimation ? '>> NO ACTIVE PLAN_' : 'No active subscription'}
+            </p>
+            <p className='text-sm mb-6' style={{ color: t.textSecondary }}>
+              {t.pricingGlowAnimation
+                ? 'SELECT A PLAN TO ACCESS THE AGENTS'
+                : 'Subscribe to a plan to start using DevAgent OS agents.'}
+            </p>
+            <button
+              onClick={() => router.push('/pricing')}
+              className='px-6 py-3 rounded-xl font-semibold text-sm'
+              style={{ backgroundColor: t.accent, color: t.bg }}
+            >
+              {t.pricingGlowAnimation ? 'VIEW PLANS_' : 'View plans →'}
+            </button>
+          </div>
+        )}
+
         {/* Billing data */}
         {billing && plan && (
           <div className='flex flex-col gap-4'>
-            {/* current plan */}
+            {/* Plan actuel */}
             <div
               onMouseEnter={() => setHoveredCard('plan')}
               onMouseLeave={() => setHoveredCard(null)}
@@ -120,14 +163,14 @@ export default function BillingPage() {
                       billing.status === 'active'
                         ? '#dcfce7'
                         : billing.status === 'trialing'
-                        ? '#dbeafe'
-                        : '#fee2e2',
+                          ? '#dbeafe'
+                          : '#fee2e2',
                     color:
                       billing.status === 'active'
                         ? '#16a34a'
                         : billing.status === 'trialing'
-                        ? '#2563eb'
-                        : '#dc2626',
+                          ? '#2563eb'
+                          : '#dc2626',
                   }}
                 >
                   {billing.status}
@@ -198,7 +241,7 @@ export default function BillingPage() {
               </p>
             </div>
 
-            {/* Agents available */}
+            {/* Agents disponibles */}
             <div
               onMouseEnter={() => setHoveredCard('agents')}
               onMouseLeave={() => setHoveredCard(null)}
