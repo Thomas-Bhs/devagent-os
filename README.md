@@ -10,7 +10,7 @@
 ![NextAuth](https://img.shields.io/badge/Auth-Google%20OAuth-blue?style=flat-square&logo=google)
 ![Resend](https://img.shields.io/badge/Emails-Resend-black?style=flat-square)
 ![Sentry](https://img.shields.io/badge/Monitoring-Sentry-purple?style=flat-square&logo=sentry)
-![Lighthouse](https://img.shields.io/badge/Lighthouse-99%2F96%2F100%2F100-green?style=flat-square&logo=lighthouse)
+![Lighthouse](https://img.shields.io/badge/Lighthouse-100%2F100%2F100%2F100-green?style=flat-square&logo=lighthouse)
 
 **Live demo** → [devagent-os.vercel.app](https://devagent-os.vercel.app)
 
@@ -218,6 +218,7 @@ export const myTheme: ThemeConfig = {
 | Orchestrator | Sonnet | Multi-agent coordination       |
 
 Additional optimizations:
+
 - History trimmed to last 6 messages
 - `maxTokens` capped per agent (1000–2000)
 - System prompts compressed
