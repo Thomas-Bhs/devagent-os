@@ -1,12 +1,14 @@
 # DevAgent OS
 
-> AI-powered multi-agent development assistant — built with Next.js, Claude API, and MongoDB.
+> AI-powered multi-agent development assistant — built with Next.js, Claude API, MongoDB and Stripe.
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.2-black?style=flat-square&logo=next.js)
 ![Claude](https://img.shields.io/badge/Claude-Sonnet%20%7C%20Haiku-orange?style=flat-square)
 ![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green?style=flat-square&logo=mongodb)
+![Stripe](https://img.shields.io/badge/Stripe-Billing-6772e5?style=flat-square&logo=stripe)
 ![Vercel](https://img.shields.io/badge/Vercel-Deployed-black?style=flat-square&logo=vercel)
 ![NextAuth](https://img.shields.io/badge/Auth-Google%20OAuth-blue?style=flat-square&logo=google)
+![Resend](https://img.shields.io/badge/Emails-Resend-black?style=flat-square)
 ![Sentry](https://img.shields.io/badge/Monitoring-Sentry-purple?style=flat-square&logo=sentry)
 ![Lighthouse](https://img.shields.io/badge/Lighthouse-99%2F96%2F100%2F100-green?style=flat-square&logo=lighthouse)
 
@@ -16,9 +18,34 @@
 
 ## What is DevAgent OS?
 
-DevAgent OS is a production-ready multi-agent AI system where each agent specializes in a specific development task. A central orchestrator coordinates the agents and can run them sequentially as a pipeline — from code generation to debugging, testing, and UI design.
+DevAgent OS is a production-ready SaaS multi-agent AI system where each agent specializes in a specific development task. A central orchestrator coordinates the agents and can run them sequentially as a pipeline — from code generation to debugging, testing, and UI design.
 
-Built as a portfolio project to demonstrate AI agent architecture, full-stack development, and production deployment practices.
+Built to demonstrate AI agent architecture, full-stack development, SaaS billing infrastructure, and production deployment practices.
+
+---
+
+## V2 — SaaS Features
+
+- **Stripe Billing** — 3 subscription plans (Starter / Pro / Expert) with recurring payments
+- **Webhooks** — Stripe event handling with signature verification and idempotency
+- **Plan-based access control** — agents locked by subscription tier
+- **Monthly quota system** — atomic request counter with auto-reset on the 1st
+- **Customer portal** — Stripe-hosted subscription management (upgrade, cancel, invoices)
+- **Billing dashboard** — real-time quota usage, plan info and renewal date
+- **Transactional emails** — welcome, quota alert (80%) and cancellation via Resend
+- **RGPD compliant** — full account deletion (MongoDB + Stripe customer)
+- **Mobile responsive** — mobile-first layout with burger menu and sidebar drawer
+- **Admin bypass** — unlimited access for the admin account
+
+---
+
+## Pricing
+
+| Plan    | Price | Agents                                        | Requests/month |
+| ------- | ----- | --------------------------------------------- | -------------- |
+| Starter | 7€    | Dev, Debug, QA                                | 800            |
+| Pro     | 15€   | Dev, Debug, QA, UI/UX, Designer               | 1 500          |
+| Expert  | 24€   | Dev, Debug, QA, UI/UX, Designer, Orchestrator | 3 000          |
 
 ---
 
@@ -46,9 +73,9 @@ Built as a portfolio project to demonstrate AI agent architecture, full-stack de
 - **Token dashboard** — Real-time token usage and cost tracking by agent (Today / Week / Month)
 - **File upload** — Attach `.ts`, `.tsx`, `.js`, `.jsx`, `.json`, `.css` files for analysis
 - **Auth** — Google OAuth via NextAuth.js
-- **Rate limiting** — 20 messages lifetime limit per user, tracked in MongoDB
 - **Monitoring** — Sentry error tracking and performance tracing
 - **LangSmith tracing** — All agent calls traced with latency and error tracking
+- **Mobile responsive** — Mobile-first layout with burger menu and sidebar drawer
 
 ---
 
@@ -67,8 +94,10 @@ Framework     Next.js 16.2 + TypeScript + Tailwind
 AI SDK        Vercel AI SDK v4 (ai@4.3.16)
 Models        Claude Sonnet 4.5 + Claude Haiku 4.5
 Provider      Anthropic (@ai-sdk/anthropic@1.1.12)
-Database      MongoDB Atlas M0 (free tier)
+Database      MongoDB Atlas
 Auth          NextAuth.js + Google OAuth
+Billing       Stripe (subscriptions, webhooks, portal)
+Emails        Resend (transactional)
 Monitoring    Sentry (error tracking + tracing)
 Tracing       LangSmith (EU endpoint)
 Search        Tavily API (docs search)
@@ -82,41 +111,73 @@ Deployment    Vercel
 
 ```
 app/
-├── api/agents/
-│   ├── dev/route.ts          → Claude Sonnet
-│   ├── debug/route.ts        → Claude Sonnet
-│   ├── qa/route.ts           → Claude Haiku
-│   ├── uiux/route.ts         → Claude Haiku
-│   ├── designer/route.ts     → Claude Haiku
-│   └── orchestrator/route.ts → Claude Sonnet
 ├── api/
-│   ├── conversations/        → CRUD MongoDB
-│   ├── stats/                → Token aggregations
-│   └── admin/visitors/       → Visitor tracking
+│   ├── agents/
+│   │   ├── dev/route.ts          → Claude Sonnet + agent guard
+│   │   ├── debug/route.ts        → Claude Sonnet + agent guard
+│   │   ├── qa/route.ts           → Claude Haiku + agent guard
+│   │   ├── uiux/route.ts         → Claude Haiku + agent guard
+│   │   ├── designer/route.ts     → Claude Haiku + agent guard
+│   │   └── orchestrator/route.ts → Claude Sonnet + agent guard
+│   ├── stripe/
+│   │   ├── webhook/route.ts      → Stripe events + idempotency
+│   │   ├── create-checkout-session/
+│   │   ├── portal/route.ts       → Customer portal redirect
+│   │   └── session/route.ts      → Session retrieval
+│   ├── billing/route.ts          → Subscription + quota data
+│   ├── user/delete/route.ts      → RGPD account deletion
+│   ├── conversations/            → CRUD MongoDB
+│   └── stats/                    → Token aggregations
+├── billing/
+│   └── page.tsx                  → Billing dashboard
+├── pricing/
+│   └── page.tsx                  → Pricing page
+├── checkout/
+│   └── success/page.tsx          → Post-payment confirmation
 ├── config/
-│   └── agents.tsx            → Centralized agent config
+│   └── agents.tsx                → Centralized agent config
 ├── context/
-│   └── ThemeContext.tsx       → Theme provider (no prop drilling)
+│   └── ThemeContext.tsx          → Theme provider
 ├── hooks/
 │   ├── useAgent.ts
 │   ├── useConversations.ts
-│   └── useTokenStats.ts
+│   ├── useTokenStats.ts
+│   └── useBilling.ts             → Subscription + quota data
 ├── lib/
-│   ├── auth.ts               → NextAuth config
+│   ├── stripe.ts                 → Stripe singleton
+│   ├── email.ts                  → Resend email functions
+│   ├── plans.ts                  → Plan config (source of truth)
+│   ├── auth.ts                   → NextAuth config
 │   ├── mongodb.ts
-│   ├── theme.ts              → ThemeConfig + formatLabel()
-│   ├── themes/
-│   │   ├── spatial.ts
-│   │   └── fallout.ts
-│   └── db/
-│       ├── tokens.ts
-│       ├── conversations.ts
-│       └── visitors.ts       → Rate limiting + visitor tracking
+│   ├── theme.ts                  → ThemeConfig + formatLabel()
+│   ├── guards/
+│   │   └── agentGuard.ts         → Subscription + quota check
+│   ├── db/
+│   │   ├── subscriptions.ts      → CRUD + atomic quota increment
+│   │   ├── deleteUser.ts         → Full account deletion
+│   │   ├── tokens.ts
+│   │   ├── conversations.ts
+│   │   └── visitors.ts
+│   └── themes/
+│       ├── spatial.ts
+│       └── fallout.ts
 └── components/
-    ├── layout/               → Topbar, Sidebar, SettingsPanel
-    ├── agents/               → AgentCard, AgentChip
-    └── chat/                 → ChatMessages, ChatInput, MessageBubble, ToolPill, PreviewModal
+    ├── layout/                   → Topbar, Sidebar, SettingsPanel
+    ├── agents/                   → AgentCard, AgentChip
+    └── chat/                     → ChatMessages, ChatInput, MessageBubble
 ```
+
+---
+
+## Stripe Security
+
+- Webhook signature verification (`stripe.webhooks.constructEvent`)
+- Idempotency via `stripe_events` MongoDB collection — prevents double processing
+- `current_period_end` logic — access maintained until end of paid period on cancellation
+- Hard quota limit with atomic MongoDB increment (`$inc` + `$expr`) — no race conditions
+- Admin bypass via `ADMIN_EMAIL` environment variable
+- Budget cap configured on Anthropic dashboard ($50 hard limit)
+- Throttle 10 req/minute per user via rate limiting middleware
 
 ---
 
@@ -133,6 +194,8 @@ export const myTheme: ThemeConfig = {
   fontFamily: 'monospace',
   labelPrefix: '>> ',
   labelSuffix: ' <<',
+  pricingTitle: 'Choose your plan',
+  pricingGlowAnimation: false,
   // ... all semantic properties
 };
 
@@ -155,10 +218,10 @@ export const myTheme: ThemeConfig = {
 | Orchestrator | Sonnet | Multi-agent coordination       |
 
 Additional optimizations:
-
 - History trimmed to last 6 messages
 - `maxTokens` capped per agent (1000–2000)
 - System prompts compressed
+- Agent images converted to WebP (10x lighter)
 
 ---
 
@@ -187,6 +250,26 @@ ANTHROPIC_API_KEY=sk-ant-...
 # MongoDB
 MONGODB_URI=mongodb+srv://...
 
+# NextAuth
+NEXTAUTH_SECRET=...
+NEXTAUTH_URL=http://localhost:3000
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+
+# Stripe
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_PRICE_ID_STARTER=price_...
+STRIPE_PRICE_ID_PRO=price_...
+STRIPE_PRICE_ID_EXPERT=price_...
+
+# Resend
+RESEND_API_KEY=re_...
+RESEND_FROM_EMAIL=onboarding@resend.dev
+
+# Admin
+ADMIN_EMAIL=your@email.com
+
 # LangSmith
 LANGSMITH_API_KEY=...
 LANGSMITH_TRACING_V2=true
@@ -195,12 +278,6 @@ LANGSMITH_PROJECT=agent-dev
 
 # Tavily
 TAVILY_API_KEY=tvly-...
-
-# NextAuth
-NEXTAUTH_SECRET=...
-NEXTAUTH_URL=http://localhost:3000
-GOOGLE_CLIENT_ID=...
-GOOGLE_CLIENT_SECRET=...
 
 # Sentry
 NEXT_PUBLIC_SENTRY_DSN=https://...@sentry.io/...
@@ -223,8 +300,11 @@ npm install --legacy-peer-deps
 cp .env.example .env.local
 # Fill in your keys
 
-# Dev
+# Dev server
 npm run dev
+
+# Stripe webhooks (separate terminal)
+stripe listen --forward-to localhost:3000/api/stripe/webhook
 ```
 
 ---
@@ -234,7 +314,15 @@ npm run dev
 - [x] Google Auth (NextAuth.js)
 - [x] Sentry monitoring
 - [x] Rate limiting per user
+- [x] Stripe billing (subscriptions, webhooks, portal)
+- [x] Plan-based agent access control
+- [x] Monthly quota system
+- [x] Transactional emails (Resend)
+- [x] RGPD account deletion
+- [x] Mobile responsive layout
+- [x] Billing dashboard
 - [ ] Custom domain
+- [ ] Stripe live mode
 - [ ] Multi-language FR/EN (next-intl)
 - [ ] Claude Opus on Orchestrator for complex pipelines
 
@@ -242,8 +330,8 @@ npm run dev
 
 ## Author
 
-Built by **Thomas Bourc'his** — fullstack JavaScript developer exploring AI agent architecture.
+Built by **Thomas Bourc'his** — fullstack developer.
 
-[bourchisthomas@gmail.com](mailto:bourchisthomas@gmail.com)
+[bourchisthomas@gmail.com](mailto:bourchisthomas@gmail.com) · [GitHub](https://github.com/Thomas-Bhs/agent-dev)
 
-Deployed on [Vercel](https://vercel.com) · Powered by [Anthropic](https://anthropic.com)
+Deployed on [Vercel](https://vercel.com) · Powered by [Anthropic](https://anthropic.com) · Billing by [Stripe](https://stripe.com)
