@@ -83,7 +83,7 @@ Built to demonstrate AI agent architecture, full-stack development, SaaS billing
 
 | Performance                 | Accessibility | Best Practices | SEO |
 | --------------------------- | ------------- | -------------- | --- |
-| 100 (desktop) / 87 (mobile) | 100           | 100            | 100 |
+| 100 (desktop) / 91 (mobile) | 100           | 100            | 100 |
 
 ---
 
