@@ -81,9 +81,9 @@ Built to demonstrate AI agent architecture, full-stack development, SaaS billing
 
 ## Lighthouse Scores
 
-| Performance | Accessibility | Best Practices | SEO |
-| ----------- | ------------- | -------------- | --- |
-| 99          | 96            | 100            | 100 |
+| Performance                 | Accessibility | Best Practices | SEO |
+| --------------------------- | ------------- | -------------- | --- |
+| 100 (desktop) / 87 (mobile) | 100           | 100            | 100 |
 
 ---
 
