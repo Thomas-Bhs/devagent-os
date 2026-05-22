@@ -212,6 +212,19 @@ export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle
                   <span>{isFallout ? 'PRICING_' : 'Pricing'}</span>
                 </button>
 
+                {/* Billing */}
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    router.push('/billing');
+                  }}
+                  className='w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors hover:opacity-80'
+                  style={{ color: t.text, fontFamily: t.fontFamily }}
+                >
+                  <span>📊</span>
+                  <span>{isFallout ? 'BILLING_' : 'Billing'}</span>
+                </button>
+
                 {/* Manage subscription */}
                 <button
                   onClick={async () => {
