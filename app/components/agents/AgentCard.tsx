@@ -16,9 +16,9 @@ interface AgentCardProps {
 }
 
 const badgeConfig = {
-  active: { label: 'Active', className: 'bg-emerald-50 text-emerald-600' },
-  ready: { label: 'Ready', className: 'bg-blue-50 text-blue-600' },
-  soon: { label: 'Soon', className: 'bg-gray-100 text-gray-400' },
+  active: { label: 'Active', className: 'bg-emerald-100 text-emerald-700' },
+  ready: { label: 'Ready', className: 'bg-blue-100 text-blue-700' },
+  soon: { label: 'Soon', className: 'bg-gray-100 text-gray-500' },
 };
 
 export default function AgentCard({
@@ -99,7 +99,7 @@ export default function AgentCard({
       <p
         className={cn(
           'text-[10px] leading-snug mb-2',
-          isSelected ? 'text-gray-400' : 'text-gray-400'
+          isSelected ? 'text-gray-400' : 'text-gray-500'
         )}
       >
         {description}

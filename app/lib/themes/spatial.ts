@@ -9,7 +9,7 @@ export const spatialTheme: ThemeConfig = {
   surface: '#ffffff',
   border: '#e0e0eb',
   text: '#0f0f1a',
-  textSecondary: '#6b7280',
+  textSecondary: '#4b5563',
   accent: '#0f0f1a',
 
   // Typography
@@ -23,7 +23,7 @@ export const spatialTheme: ThemeConfig = {
   cardBg: '#f9fafb',
   cardBorder: '#e5e7eb',
   inputBg: '#f9fafb',
-  sectionLabelColor: '#9ca3af',
+  sectionLabelColor: '#6b7280',
   pillBg: '#f3f4f6',
   pillRunningBg: '#3b82f6',
   pillRunningText: '#ffffff',
