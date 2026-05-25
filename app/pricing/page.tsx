@@ -45,7 +45,7 @@ export default function PricingPage() {
       style={{ backgroundColor: t.bg, fontFamily: t.fontFamily }}
     >
       <button
-        onClick={() => router.back()}
+        onClick={() => router.push('/')}
         className='flex items-center gap-2 mb-8 text-sm transition-opacity hover:opacity-70'
         style={{ color: t.textSecondary, fontFamily: t.fontFamily }}
       >
@@ -192,7 +192,10 @@ export default function PricingPage() {
 
       {/* Footer */}
       <p className='text-center text-xs mt-10' style={{ color: t.textSecondary }}>
-        {t.pricingFooterNote}
+        {t.pricingFooterNote}{' '}
+        <a href='/legal' style={{ color: t.textSecondary, textDecoration: 'underline' }}>
+          Legal
+        </a>
       </p>
     </main>
   );
