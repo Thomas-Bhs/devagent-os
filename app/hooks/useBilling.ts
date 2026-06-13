@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import { PlanId } from '@/app/types/subscription';
 
 interface BillingData {
-  plan: PlanId;
+  plan: PlanId | 'free';
   status: string;
-  currentPeriodEnd: string;
+  currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
   requestsUsed: number;
   requestsLimit: number;
@@ -27,13 +27,6 @@ export function useBilling(): UseBillingReturn {
     const fetchBilling = async () => {
       try {
         const res = await fetch('/api/billing');
-
-        // 404 = no billing data
-        if (res.status === 404) {
-          setLoading(false);
-          return;
-        }
-
         if (!res.ok) throw new Error('Failed to fetch billing');
         const data = await res.json();
         setBilling(data);

@@ -5,6 +5,8 @@ import { useChat } from '@ai-sdk/react';
 import { useTheme } from './context/ThemeContext';
 import { useConversations } from './hooks/useConversations';
 import { useAgent } from './hooks/useAgent';
+import { useBilling } from './hooks/useBilling';
+import { getAllowedAgentIds } from './lib/plans';
 import { AGENTS } from './config/agents';
 import Topbar from './components/layout/Topbar';
 import Sidebar from './components/layout/Sidebar';
@@ -19,6 +21,9 @@ interface FileContent {
 
 export default function Home() {
   const { t } = useTheme();
+  const { billing, loading: billingLoading } = useBilling();
+  // null = all unlocked (admin bypass); during load keep null to avoid flash
+  const allowedAgentIds = billingLoading ? null : getAllowedAgentIds(billing?.plan ?? null);
   const { selectedAgentId, setSelectedAgentId, selectedAgent, agentRoute } = useAgent();
   const {
     conversations,
@@ -41,18 +46,16 @@ export default function Home() {
     body: { fileContent },
     onError: (error) => {
       console.error('useChat error:', error);
-      if (
-        error.message.includes('429') ||
-        error.message.includes('demo limit') ||
-        error.message.includes('rate limit')
-      ) {
-        setError(
-          "You've reached the demo limit of 20 messages. Contact me at bourchisthomas@gmail.com to discuss your project!"
-        );
+      if (error.message.includes('Free trial limit reached')) {
+        setError('Free trial limit reached — subscribe to a plan to continue using agents.');
+      } else if (error.message.includes('Monthly quota reached')) {
+        setError('Monthly quota reached — resets on the 1st of next month.');
+      } else if (error.message.includes('429')) {
+        setError('Too many requests — please slow down.');
       } else if (error.message.includes('signed in')) {
         setError('You must be signed in to use DevAgent OS.');
-      } else if (error.message.includes('403')) {
-        setError('Access denied — check your network or disable your VPN.');
+      } else if (error.message.includes('requires a paid plan') || error.message.includes('403')) {
+        setError('This agent requires a paid plan — upgrade to unlock it.');
       } else {
         setError('An error occurred — please try again.');
       }
@@ -112,6 +115,7 @@ export default function Home() {
         onClear={handleClear}
         onSettings={() => setIsSettingsOpen(true)}
         onMenuToggle={() => setIsSidebarOpen(true)}
+        planId={billing?.plan ?? null}
       />
 
       <div className='flex flex-1 overflow-hidden'>
@@ -127,6 +131,7 @@ export default function Home() {
           onNewConversation={handleNewConversation}
           onDeleteConversation={handleDeleteConversation}
           onDeleteAllConversations={handleDeleteAllConversations}
+          allowedAgentIds={allowedAgentIds}
         />
 
         <main className='flex flex-col flex-1 overflow-hidden' style={{ background: t.bg }}>

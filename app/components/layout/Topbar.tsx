@@ -20,9 +20,17 @@ interface TopbarProps {
   onClear: () => void;
   onSettings: () => void;
   onMenuToggle: () => void;
+  planId?: string | null;
 }
 
-export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle }: TopbarProps) {
+const PLAN_BADGE: Record<string, { label: string; bg: string; color: string }> = {
+  free: { label: 'Free', bg: '#f3f4f6', color: '#6b7280' },
+  starter: { label: 'Starter', bg: '#dbeafe', color: '#1d4ed8' },
+  pro: { label: 'Pro', bg: '#ede9fe', color: '#7c3aed' },
+  expert: { label: 'Expert', bg: '#dcfce7', color: '#15803d' },
+};
+
+export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle, planId }: TopbarProps) {
   const { t, theme, setTheme } = useTheme();
   const isFallout = !!t.labelPrefix;
   const { data: session } = useSession();
@@ -49,7 +57,7 @@ export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle
 
   return (
     <div
-      className='h-14 px-6 flex items-center justify-between flex-shrink-0'
+      className='h-14 px-6 flex items-center justify-between shrink-0'
       style={{
         background: t.surface,
         borderBottom: `1px solid ${t.border}`,
@@ -189,14 +197,26 @@ export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle
                   border: `1px solid ${t.border}`,
                 }}
               >
-                {/* Email */}
+                {/* Email + plan badge */}
                 <div className='px-4 py-3 border-b' style={{ borderColor: t.border }}>
                   <p
-                    className='text-xs truncate'
+                    className='text-xs truncate mb-1.5'
                     style={{ color: t.textSecondary, fontFamily: t.fontFamily }}
                   >
                     {session.user.email}
                   </p>
+                  {(() => {
+                    const key = planId ?? 'free';
+                    const badge = PLAN_BADGE[key] ?? PLAN_BADGE.free;
+                    return (
+                      <span
+                        className='inline-block text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide'
+                        style={{ backgroundColor: badge.bg, color: badge.color }}
+                      >
+                        {isFallout ? `>> ${badge.label.toUpperCase()}_` : badge.label}
+                      </span>
+                    );
+                  })()}
                 </div>
 
                 {/* Pricing */}
@@ -225,20 +245,22 @@ export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle
                   <span>{isFallout ? 'BILLING_' : 'Billing'}</span>
                 </button>
 
-                {/* Manage subscription */}
-                <button
-                  onClick={async () => {
-                    setMenuOpen(false);
-                    const res = await fetch('/api/stripe/portal', { method: 'POST' });
-                    const data = await res.json();
-                    if (data.url) window.location.href = data.url;
-                  }}
-                  className='w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors hover:opacity-80'
-                  style={{ color: t.text, fontFamily: t.fontFamily }}
-                >
-                  <span>🔧</span>
-                  <span>{isFallout ? 'MANAGE_SUBSCRIPTION_' : 'Manage subscription'}</span>
-                </button>
+                {/* Manage subscription — hidden on free plan */}
+                {planId && planId !== 'free' && (
+                  <button
+                    onClick={async () => {
+                      setMenuOpen(false);
+                      const res = await fetch('/api/stripe/portal', { method: 'POST' });
+                      const data = await res.json();
+                      if (data.url) window.location.href = data.url;
+                    }}
+                    className='w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors hover:opacity-80'
+                    style={{ color: t.text, fontFamily: t.fontFamily }}
+                  >
+                    <span>🔧</span>
+                    <span>{isFallout ? 'MANAGE_SUBSCRIPTION_' : 'Manage subscription'}</span>
+                  </button>
+                )}
 
                 <div className='h-px mx-4' style={{ backgroundColor: t.border }} />
 

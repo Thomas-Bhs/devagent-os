@@ -1,9 +1,12 @@
 'use client';
 
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTheme } from '@/app/context/ThemeContext';
 import { formatLabel } from '@/app/lib/theme';
 import AgentCard from '../agents/AgentCard';
 import type { AgentConfig } from '@/app/config/agents';
+import { PLANS, getMinPlanForAgent } from '@/app/lib/plans';
 
 interface Conversation {
   id: string;
@@ -25,6 +28,13 @@ interface SidebarProps {
   onNewConversation: () => void;
   onDeleteConversation: (id: string) => void;
   onDeleteAllConversations: () => void;
+  allowedAgentIds: string[] | null;
+}
+
+interface LockedAgentPopup {
+  agentId: string;
+  agentName: string;
+  minPlanId: string;
 }
 
 export default function Sidebar({
@@ -39,13 +49,32 @@ export default function Sidebar({
   onNewConversation,
   onDeleteConversation,
   onDeleteAllConversations,
+  allowedAgentIds,
 }: SidebarProps) {
   const { t } = useTheme();
   const isFallout = !!t.labelPrefix;
+  const router = useRouter();
+  const [lockedPopup, setLockedPopup] = useState<LockedAgentPopup | null>(null);
+
+  const isAgentLocked = (agentId: string) =>
+    allowedAgentIds !== null && !allowedAgentIds.includes(agentId);
+
+  const handleAgentClick = (agent: AgentConfig) => {
+    if (isAgentLocked(agent.id)) {
+      setLockedPopup({
+        agentId: agent.id,
+        agentName: agent.name,
+        minPlanId: getMinPlanForAgent(agent.id),
+      });
+      return;
+    }
+    onAgentSelect(agent.id);
+    onClose();
+  };
 
   const sidebarContent = (
     <div
-      className='w-64 h-full flex flex-col overflow-hidden flex-shrink-0'
+      className='w-64 h-full flex flex-col overflow-hidden shrink-0'
       style={{
         background: t.surface,
         borderRight: `1px solid ${t.border}`,
@@ -68,11 +97,8 @@ export default function Sidebar({
               iconBg={agent.iconBg}
               badge={agent.badge}
               isSelected={selectedAgentId === agent.id}
-              isDisabled={agent.isDisabled}
-              onClick={() => {
-                onAgentSelect(agent.id);
-                onClose(); // ferme la sidebar sur mobile après sélection
-              }}
+              isDisabled={isAgentLocked(agent.id)}
+              onClick={() => handleAgentClick(agent)}
               agentId={agent.id}
             />
           ))}
@@ -124,7 +150,7 @@ export default function Sidebar({
                 }}
               >
                 <div
-                  className='w-1.5 h-1.5 rounded-full flex-shrink-0'
+                  className='w-1.5 h-1.5 rounded-full shrink-0'
                   style={{ background: isFallout ? t.border : conv.agentColor }}
                 />
                 <div className='flex-1 overflow-hidden'>
@@ -182,10 +208,82 @@ export default function Sidebar({
       {/* Mobile — drawer overlay */}
       {isOpen && (
         <div className='md:hidden fixed inset-0 z-50 flex'>
-          {/* Overlay sombre */}
           <div className='absolute inset-0 bg-black/50' onClick={onClose} />
-          {/* Sidebar */}
           <div className='relative z-10 h-full'>{sidebarContent}</div>
+        </div>
+      )}
+
+      {/* Upgrade popup — agent locked */}
+      {lockedPopup && (
+        <div
+          className='fixed inset-0 z-50 flex items-center justify-center p-4'
+          onClick={() => setLockedPopup(null)}
+        >
+          <div className='absolute inset-0 bg-black/40 backdrop-blur-sm' />
+          <div
+            className='relative w-full max-w-sm rounded-2xl p-6 shadow-xl'
+            style={{ backgroundColor: t.surface, border: `1px solid ${t.cardBorder}` }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Lock icon */}
+            <div
+              className='w-12 h-12 rounded-2xl flex items-center justify-center mb-4'
+              style={{ backgroundColor: t.subtleBg }}
+            >
+              <svg width='22' height='22' viewBox='0 0 22 22' fill='none'>
+                <rect
+                  x='3'
+                  y='10'
+                  width='16'
+                  height='11'
+                  rx='2.5'
+                  stroke={t.textSecondary}
+                  strokeWidth='1.5'
+                />
+                <path
+                  d='M7 10V7a4 4 0 018 0v3'
+                  stroke={t.textSecondary}
+                  strokeWidth='1.5'
+                  strokeLinecap='round'
+                />
+              </svg>
+            </div>
+
+            <p className='text-base font-bold mb-1' style={{ color: t.text }}>
+              {isFallout
+                ? `>> ${lockedPopup.agentName.toUpperCase()} LOCKED_`
+                : `${lockedPopup.agentName} — Plan required`}
+            </p>
+            <p className='text-sm mb-4' style={{ color: t.textSecondary }}>
+              {isFallout
+                ? `REQUIRES ${PLANS[lockedPopup.minPlanId]?.name.toUpperCase()} PLAN OR HIGHER_`
+                : `This agent requires the ${PLANS[lockedPopup.minPlanId]?.name} plan or higher. Upgrade to unlock it.`}
+            </p>
+
+            <div className='flex gap-2'>
+              <button
+                onClick={() => {
+                  setLockedPopup(null);
+                  router.push('/pricing');
+                }}
+                className='flex-1 py-2.5 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90'
+                style={{ backgroundColor: t.accent, color: t.bg }}
+              >
+                {isFallout ? 'VIEW PLANS_' : 'View plans →'}
+              </button>
+              <button
+                onClick={() => setLockedPopup(null)}
+                className='px-4 py-2.5 rounded-xl text-sm font-medium transition-opacity hover:opacity-70'
+                style={{
+                  backgroundColor: t.subtleBg,
+                  color: t.textSecondary,
+                  border: `1px solid ${t.cardBorder}`,
+                }}
+              >
+                {isFallout ? 'CLOSE_' : 'Close'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </>
