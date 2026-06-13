@@ -152,7 +152,6 @@ export const POST = traceable(
                 previousOutput = response;
                 results.push({ agent: step.agent, response: response.slice(0, 500) });
 
-                await new Promise((r) => setTimeout(r, 1000));
               }
 
               return { task, pipeline: steps.map((s) => s.agent).join(' → '), results };
