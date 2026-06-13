@@ -26,9 +26,12 @@ Built to demonstrate AI agent architecture, full-stack development, SaaS billing
 
 ## V2 — SaaS Features
 
+- **Free trial** — 20 one-time requests on Dev, Debug and QA agents — no credit card required
 - **Stripe Billing** — 3 subscription plans (Starter / Pro / Expert) with recurring payments
 - **Webhooks** — Stripe event handling with signature verification and idempotency
-- **Plan-based access control** — agents locked by subscription tier
+- **Plan-based access control** — agents locked in the UI by subscription tier, with upgrade popup
+- **Agent lock UI** — locked agents show a lock icon and upgrade badge; click opens an upgrade modal
+- **Plan badge** — current plan (Free / Starter / Pro / Expert) visible in the user menu
 - **Monthly quota system** — atomic request counter with auto-reset on the 1st
 - **Customer portal** — Stripe-hosted subscription management (upgrade, cancel, invoices)
 - **Billing dashboard** — real-time quota usage, plan info and renewal date
@@ -41,11 +44,12 @@ Built to demonstrate AI agent architecture, full-stack development, SaaS billing
 
 ## Pricing
 
-| Plan    | Price | Agents                                        | Requests/month |
-| ------- | ----- | --------------------------------------------- | -------------- |
-| Starter | 7€    | Dev, Debug, QA                                | 800            |
-| Pro     | 15€   | Dev, Debug, QA, UI/UX, Designer               | 1 500          |
-| Expert  | 24€   | Dev, Debug, QA, UI/UX, Designer, Orchestrator | 3 000          |
+| Plan        | Price | Agents                                        | Requests       |
+| ----------- | ----- | --------------------------------------------- | -------------- |
+| **Free**    | 0€    | Dev, Debug, QA                                | 20 (one-time)  |
+| **Starter** | 7€    | Dev, Debug, QA                                | 800 / month    |
+| **Pro**     | 15€   | Dev, Debug, QA, UI/UX, Designer               | 1 500 / month  |
+| **Expert**  | 24€   | Dev, Debug, QA, UI/UX, Designer, Orchestrator | 3 000 / month  |
 
 ---
 
@@ -124,12 +128,12 @@ app/
 │   │   ├── create-checkout-session/
 │   │   ├── portal/route.ts       → Customer portal redirect
 │   │   └── session/route.ts      → Session retrieval
-│   ├── billing/route.ts          → Subscription + quota data
+│   ├── billing/route.ts          → Subscription + quota data (free & paid)
 │   ├── user/delete/route.ts      → RGPD account deletion
 │   ├── conversations/            → CRUD MongoDB
 │   └── stats/                    → Token aggregations
 ├── billing/
-│   └── page.tsx                  → Billing dashboard
+│   └── page.tsx                  → Billing dashboard (free + paid views)
 ├── pricing/
 │   └── page.tsx                  → Pricing page
 ├── checkout/
@@ -142,30 +146,46 @@ app/
 │   ├── useAgent.ts
 │   ├── useConversations.ts
 │   ├── useTokenStats.ts
-│   └── useBilling.ts             → Subscription + quota data
+│   └── useBilling.ts             → Subscription + quota data (free & paid)
 ├── lib/
 │   ├── stripe.ts                 → Stripe singleton
 │   ├── email.ts                  → Resend email functions
-│   ├── plans.ts                  → Plan config (source of truth)
+│   ├── plans.ts                  → Plan config + FREE_AGENTS + agent ID mapping
 │   ├── auth.ts                   → NextAuth config
 │   ├── mongodb.ts
 │   ├── theme.ts                  → ThemeConfig + formatLabel()
 │   ├── guards/
-│   │   └── agentGuard.ts         → Subscription + quota check
+│   │   └── agentGuard.ts         → Free trial + subscription + quota check
 │   ├── db/
-│   │   ├── subscriptions.ts      → CRUD + atomic quota increment
+│   │   ├── subscriptions.ts      → CRUD + atomic quota increment + free trial tracking
 │   │   ├── deleteUser.ts         → Full account deletion
 │   │   ├── tokens.ts
 │   │   ├── conversations.ts
-│   │   └── visitors.ts
+│   │   └── visitors.ts           → Visitor analytics
 │   └── themes/
 │       ├── spatial.ts
 │       └── fallout.ts
 └── components/
-    ├── layout/                   → Topbar, Sidebar, SettingsPanel
-    ├── agents/                   → AgentCard, AgentChip
+    ├── layout/                   → Topbar (plan badge), Sidebar (agent lock + upgrade popup)
+    ├── agents/                   → AgentCard (lock icon), AgentChip
     └── chat/                     → ChatMessages, ChatInput, MessageBubble
 ```
+
+---
+
+## Quota System
+
+Two independent tracking systems in `usage_tracking` (MongoDB):
+
+| Type         | Key                    | Limit      | Reset       |
+| ------------ | ---------------------- | ---------- | ----------- |
+| Free trial   | `monthYear: 'free-trial'` | 20 req  | Never       |
+| Paid plan    | `monthYear: '2025-01'` | plan limit | 1st of month |
+
+The guard (`agentGuard.ts`) handles both paths:
+- No subscription → allow only `FREE_AGENTS` (dev / debug / qa), enforce free trial quota
+- Active subscription → check plan agents via `getAllowedAgentIds()`, enforce monthly quota
+- 80% usage → triggers `sendQuotaAlertEmail` (paid plans only)
 
 ---
 
@@ -177,7 +197,7 @@ app/
 - Hard quota limit with atomic MongoDB increment (`$inc` + `$expr`) — no race conditions
 - Admin bypass via `ADMIN_EMAIL` environment variable
 - Budget cap configured on Anthropic dashboard ($50 hard limit)
-- Throttle 10 req/minute per user via rate limiting middleware
+- Cancellation email only sent when `cancel_at_period_end === true`
 
 ---
 
@@ -258,7 +278,7 @@ GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 
 # Stripe
-STRIPE_SECRET_KEY=sk_test_...
+STRIPE_SECRET_KEY=sk_live_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 STRIPE_PRICE_ID_STARTER=price_...
 STRIPE_PRICE_ID_PRO=price_...
@@ -266,7 +286,7 @@ STRIPE_PRICE_ID_EXPERT=price_...
 
 # Resend
 RESEND_API_KEY=re_...
-RESEND_FROM_EMAIL=onboarding@resend.dev
+RESEND_FROM_EMAIL=you@yourdomain.com
 
 # Admin
 ADMIN_EMAIL=your@email.com
@@ -314,18 +334,20 @@ stripe listen --forward-to localhost:3000/api/stripe/webhook
 
 - [x] Google Auth (NextAuth.js)
 - [x] Sentry monitoring
-- [x] Rate limiting per user
 - [x] Stripe billing (subscriptions, webhooks, portal)
+- [x] Stripe live mode
 - [x] Plan-based agent access control
+- [x] Free trial (20 requests — Dev, Debug, QA)
+- [x] Agent lock UI with upgrade popup
 - [x] Monthly quota system
 - [x] Transactional emails (Resend)
 - [x] RGPD account deletion
 - [x] Mobile responsive layout
-- [x] Billing dashboard
+- [x] Billing dashboard (free + paid)
 - [ ] Custom domain
-- [ ] Stripe live mode
 - [ ] Multi-language FR/EN (next-intl)
 - [ ] Claude Opus on Orchestrator for complex pipelines
+- [ ] React Email for transactional email templates
 
 ---
 
