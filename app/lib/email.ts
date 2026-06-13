@@ -55,7 +55,7 @@ export async function sendWelcomeEmail({
           </div>
         </div>
 
-        
+        <a
           href="${process.env.NEXTAUTH_URL}"
           style="display: inline-block; background: #0f0f1a; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 8px;"
         >
@@ -113,7 +113,7 @@ export async function sendQuotaAlertEmail({
           Your quota resets on the 1st of next month. Consider upgrading your plan for more requests.
         </p>
 
-        
+        <a
           href="${process.env.NEXTAUTH_URL}/billing"
           style="display: inline-block; background: #0f0f1a; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 8px;"
         >
@@ -123,7 +123,7 @@ export async function sendQuotaAlertEmail({
         ${
           plan?.id !== 'expert'
             ? `
-          
+          <a
             href="${process.env.NEXTAUTH_URL}/pricing"
             style="display: inline-block; background: transparent; color: #0f0f1a; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 8px; margin-left: 8px; border: 1px solid #e5e7eb;"
           >
@@ -175,7 +175,7 @@ export async function sendCancellationEmail({
           Changed your mind? You can resubscribe at any time.
         </p>
 
-        
+        <a
           href="${process.env.NEXTAUTH_URL}/pricing"
           style="display: inline-block; background: #0f0f1a; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 8px;"
         >

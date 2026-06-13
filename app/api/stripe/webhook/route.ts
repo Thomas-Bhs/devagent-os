@@ -42,6 +42,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   // update or insert subscription in DB
   await upsertSubscription({
     userId,
+    email: session.customer_email ?? undefined,
     stripeCustomerId: session.customer as string,
     stripeSubscriptionId: subscription.id,
     plan: planId as 'starter' | 'pro' | 'expert',
@@ -79,17 +80,25 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
   });
 
-  const customer = await stripe.customers.retrieve(subscription.customer as string);
-  const email = 'email' in customer ? customer.email : null;
+  if (subscription.cancel_at_period_end) {
+    const customer = await stripe.customers.retrieve(subscription.customer as string);
+    const email = 'email' in customer ? customer.email : null;
 
-  if (email) {
-    sendCancellationEmail({
-      to: email,
-      currentPeriodEnd: new Date(
-        (subscription.items.data[0] as unknown as { current_period_end: number })
-          .current_period_end * 1000
-      ),
-    }).catch(console.error);
+    if (email) {
+      // Persist email so quota alerts can reach the user without Stripe calls
+      await upsertSubscription({
+        userId: subscription.metadata?.userId ?? '',
+        email,
+      });
+
+      sendCancellationEmail({
+        to: email,
+        currentPeriodEnd: new Date(
+          (subscription.items.data[0] as unknown as { current_period_end: number })
+            .current_period_end * 1000
+        ),
+      }).catch(console.error);
+    }
   }
 
   console.log(`[webhook] Subscription updated — ${subscription.id}`);
