@@ -1,6 +1,6 @@
 import clientPromise from '@/app/lib/mongodb';
 import { Subscription, UsageTracking, SubscriptionStatus } from '@/app/types/subscription';
-import { getRequestsLimit } from '@/app/lib/plans';
+import { getRequestsLimit, FREE_TRIAL_REQUESTS } from '@/app/lib/plans';
 import { sendQuotaAlertEmail } from '@/app/lib/email';
 
 // Helpers
@@ -18,7 +18,7 @@ const getCurrentMonthYear = (): string => {
 // Subscriptions
 
 export async function upsertSubscription(
-  data: Partial<Subscription> & { userId: string }
+  data: Partial<Subscription> & { userId: string; email?: string }
 ): Promise<void> {
   const db = await getDb();
   await db.collection('subscriptions').updateOne(
@@ -72,9 +72,29 @@ export async function getOrCreateUsage(userId: string, planId?: string): Promise
     .findOne({ userId, monthYear }) as Promise<UsageTracking>;
 }
 
-export async function incrementUsage(userId: string): Promise<boolean> {
+export async function getOrCreateFreeUsage(userId: string): Promise<UsageTracking> {
   const db = await getDb();
-  const monthYear = getCurrentMonthYear();
+  await db.collection('usage_tracking').updateOne(
+    { userId, monthYear: 'free-trial' },
+    {
+      $setOnInsert: {
+        userId,
+        monthYear: 'free-trial',
+        requestsUsed: 0,
+        requestsLimit: FREE_TRIAL_REQUESTS,
+        resetDate: null,
+      },
+    },
+    { upsert: true }
+  );
+  return db
+    .collection<UsageTracking>('usage_tracking')
+    .findOne({ userId, monthYear: 'free-trial' }) as Promise<UsageTracking>;
+}
+
+export async function incrementUsage(userId: string, overrideMonthYear?: string): Promise<boolean> {
+  const db = await getDb();
+  const monthYear = overrideMonthYear ?? getCurrentMonthYear();
 
   const result = await db.collection('usage_tracking').findOneAndUpdate(
     {
@@ -85,23 +105,23 @@ export async function incrementUsage(userId: string): Promise<boolean> {
     { $inc: { requestsUsed: 1 } },
     { returnDocument: 'after' }
   );
-  // Alert at 80%
+  // Alert at 80% — fire-and-forget, does not block the response
   if (result) {
-    const { requestsUsed, requestsLimit, userId } = result as unknown as UsageTracking;
+    const { requestsUsed, requestsLimit, userId: uid } = result as unknown as UsageTracking;
     const percent = requestsUsed / requestsLimit;
 
     if (percent >= 0.8 && percent < 0.81) {
-      // send only one time the alert
-      import('@/app/lib/mongodb')
-        .then(async ({ default: clientPromise }) => {
-          const client = await clientPromise;
-          const db = client.db();
-          const sub = await db.collection('subscriptions').findOne({ userId });
-          const userEmail = sub?.email; // si tu stockes l'email
-
-          // Alternative : récupère l'email depuis la session
-          // Pour l'instant on log
-          console.log(`[quota] User ${userId} at ${Math.round(percent * 100)}%`);
+      db.collection('subscriptions')
+        .findOne({ userId: uid })
+        .then((sub) => {
+          if (sub?.email && sub?.plan) {
+            return sendQuotaAlertEmail({
+              to: sub.email,
+              requestsUsed,
+              requestsLimit,
+              planId: sub.plan,
+            });
+          }
         })
         .catch(console.error);
     }

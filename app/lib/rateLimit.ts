@@ -1,12 +1,13 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/lib/auth';
-import { getOrCreateVisitor, incrementMessageCount, isRateLimited } from './db/visitors';
+import { getOrCreateVisitor, incrementMessageCount } from './db/visitors';
 
 export async function checkRateLimit(req?: Request): Promise<{
   limited: boolean;
   message?: string;
 }> {
-  // Bypass for internal calls from the orchestrator
+  // Bypass for sub-agent calls from the orchestrator pipeline — quota is already
+  // checked by checkAgentAccess on the orchestrator entry point.
   if (req?.headers.get('x-internal-call') === 'orchestrator') {
     return { limited: false };
   }
@@ -21,22 +22,7 @@ export async function checkRateLimit(req?: Request): Promise<{
   }
 
   const { email, name, image } = session.user;
-
-  await getOrCreateVisitor(
-    email,
-    name || 'Anonymous',
-    image || ''
-  );
-
-  const limited = await isRateLimited(email);
-
-  if (limited) {
-    return {
-      limited: true,
-      message: 'You have reached the demo limit of 20 messages. Contact me at thomas@email.com to discuss your project!',
-    };
-  }
-
+  await getOrCreateVisitor(email, name || 'Anonymous', image || '');
   await incrementMessageCount(email);
 
   return { limited: false };

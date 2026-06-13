@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/lib/auth';
-import { getSubscription, getOrCreateUsage } from '@/app/lib/db/subscriptions';
-import { PLANS } from '@/app/lib/plans';
+import { getSubscription, getOrCreateUsage, getOrCreateFreeUsage } from '@/app/lib/db/subscriptions';
 
 export async function GET() {
   try {
@@ -27,13 +26,21 @@ export async function GET() {
 
     const userId = session.user.id;
 
-    // fetch the subscription for the user
     const subscription = await getSubscription(userId);
+
+    // Free user — return free trial usage instead of 404
     if (!subscription) {
-      return NextResponse.json({ error: 'No subscription' }, { status: 404 });
+      const usage = await getOrCreateFreeUsage(userId);
+      return NextResponse.json({
+        plan: 'free',
+        status: 'free',
+        currentPeriodEnd: null,
+        cancelAtPeriodEnd: false,
+        requestsUsed: usage.requestsUsed,
+        requestsLimit: usage.requestsLimit,
+      });
     }
 
-    // fetch the usage for the current subscription plan
     const usage = await getOrCreateUsage(userId, subscription.plan);
 
     return NextResponse.json({

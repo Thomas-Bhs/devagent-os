@@ -1,7 +1,5 @@
 import clientPromise from '../mongodb';
 
-const RATE_LIMIT = 20;
-const ADMIN_EMAIL = 'bourchisthomas@gmail.com';
 
 export interface Visitor {
   email: string;
@@ -57,15 +55,6 @@ export async function incrementMessageCount(email: string): Promise<number> {
   return result!.messageCount;
 }
 
-export async function isRateLimited(email: string): Promise<boolean> {
-  if (email === ADMIN_EMAIL) return false;
-
-  const col = await getCollection();
-  const visitor = await col.findOne({ email });
-
-  if (!visitor) return false;
-  return visitor.messageCount >= RATE_LIMIT;
-}
 
 export async function getAllVisitors(): Promise<Visitor[]> {
   const col = await getCollection();

@@ -1,8 +1,13 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/lib/auth';
 import { NextResponse } from 'next/server';
-import { getSubscription, getOrCreateUsage, incrementUsage } from '@/app/lib/db/subscriptions';
-import { PLANS } from '@/app/lib/plans';
+import {
+  getSubscription,
+  getOrCreateUsage,
+  getOrCreateFreeUsage,
+  incrementUsage,
+} from '@/app/lib/db/subscriptions';
+import { FREE_AGENTS, getAllowedAgentIds } from '@/app/lib/plans';
 import { GuardResult } from '@/app/types/subscription';
 
 function isAdmin(email: string): boolean {
@@ -32,13 +37,27 @@ export async function checkAgentAccess(agentId: string): Promise<GuardResult> {
   const subscription = await getSubscription(userId);
 
   if (!subscription) {
-    return {
-      authorized: false,
-      response: NextResponse.json(
-        { error: 'No active subscription — please subscribe to use agents' },
-        { status: 403 }
-      ),
-    };
+    if (!FREE_AGENTS.includes(agentId)) {
+      return {
+        authorized: false,
+        response: NextResponse.json(
+          { error: `Agent "${agentId}" requires a paid plan — please subscribe` },
+          { status: 403 }
+        ),
+      };
+    }
+    await getOrCreateFreeUsage(userId);
+    const allowed = await incrementUsage(userId, 'free-trial');
+    if (!allowed) {
+      return {
+        authorized: false,
+        response: NextResponse.json(
+          { error: 'Free trial limit reached — subscribe to continue' },
+          { status: 429 }
+        ),
+      };
+    }
+    return { authorized: true, userId };
   }
 
   // check subscription status
@@ -57,13 +76,8 @@ export async function checkAgentAccess(agentId: string): Promise<GuardResult> {
     };
   }
 
-  // check if agent is included in user's plan
-  const plan = PLANS[subscription.plan];
-  const agentName = agentId.charAt(0).toUpperCase() + agentId.slice(1);
-
-  const hasAgentAccess = plan?.agents.some(
-    (a) => a.toLowerCase() === agentId.toLowerCase() || a.toLowerCase() === agentName.toLowerCase()
-  );
+  // check if agent is included in user's plan (uses PLAN_AGENT_NAME_TO_ID to handle 'UI/UX' → 'uiux')
+  const hasAgentAccess = getAllowedAgentIds(subscription.plan).includes(agentId);
 
   if (!hasAgentAccess) {
     return {

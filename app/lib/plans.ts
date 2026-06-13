@@ -49,6 +49,36 @@ export const PLANS: Record<string, PlanConfig> = {
 };
 
 export const FREE_TRIAL_REQUESTS = 20;
+export const FREE_AGENTS = ['dev', 'debug', 'qa'];
+
+const PLAN_AGENT_NAME_TO_ID: Record<string, string> = {
+  dev: 'dev',
+  debug: 'debug',
+  qa: 'qa',
+  'ui/ux': 'uiux',
+  designer: 'designer',
+  orchestrator: 'orchestrator',
+};
+
+export function getAllowedAgentIds(planId: string | null | undefined): string[] {
+  if (!planId) return FREE_AGENTS;
+  const plan = PLANS[planId];
+  if (!plan) return FREE_AGENTS;
+  return plan.agents
+    .map((name) => PLAN_AGENT_NAME_TO_ID[name.toLowerCase()])
+    .filter(Boolean) as string[];
+}
+
+export function getMinPlanForAgent(agentId: string): string {
+  for (const planId of ['starter', 'pro', 'expert']) {
+    const plan = PLANS[planId];
+    const ids = plan.agents
+      .map((name) => PLAN_AGENT_NAME_TO_ID[name.toLowerCase()])
+      .filter(Boolean);
+    if (ids.includes(agentId)) return planId;
+  }
+  return 'starter';
+}
 
 export function getPlanByPriceId(priceId: string): PlanConfig | undefined {
   return Object.values(PLANS).find((p) => p.stripePriceId === priceId);
