@@ -33,9 +33,12 @@ Built to demonstrate AI agent architecture, full-stack development, SaaS billing
 - **Agent lock UI** — locked agents show a lock icon and upgrade badge; click opens an upgrade modal
 - **Plan badge** — current plan (Free / Starter / Pro / Expert) visible in the user menu
 - **Monthly quota system** — atomic request counter with auto-reset on the 1st
+- **In-app quota toast** — warning notification at 80% usage, once per month, with upgrade link
+- **Onboarding modal** — 2-step welcome tour on first login with agent overview and free trial info
+- **Export conversation** — download any conversation as a formatted Markdown file
 - **Customer portal** — Stripe-hosted subscription management (upgrade, cancel, invoices)
 - **Billing dashboard** — real-time quota usage, plan info and renewal date
-- **Transactional emails** — welcome, quota alert (80%) and cancellation via Resend
+- **Transactional emails** — welcome, quota alert (80%) and cancellation via React Email + Resend
 - **RGPD compliant** — full account deletion (MongoDB + Stripe customer)
 - **Mobile responsive** — mobile-first layout with burger menu and sidebar drawer
 - **Admin bypass** — unlimited access for the admin account
@@ -74,6 +77,8 @@ Built to demonstrate AI agent architecture, full-stack development, SaaS billing
 - **Dual theme** — Spatial Cards (Apple-inspired) and Fallout (green phosphor CRT terminal)
 - **Component Preview** — Designer agent generates React/Tailwind mockups with live Sandpack preview
 - **Persistent conversations** — MongoDB stores full conversation history with load/delete
+- **Export conversation** — download any chat as a `.md` file (agent name, date, full transcript)
+- **Onboarding** — guided 2-step modal on first login introducing agents and free trial
 - **Token dashboard** — Real-time token usage and cost tracking by agent (Today / Week / Month)
 - **File upload** — Attach `.ts`, `.tsx`, `.js`, `.jsx`, `.json`, `.css` files for analysis
 - **Auth** — Google OAuth via NextAuth.js
@@ -101,7 +106,7 @@ Provider      Anthropic (@ai-sdk/anthropic@1.1.12)
 Database      MongoDB Atlas
 Auth          NextAuth.js + Google OAuth
 Billing       Stripe (subscriptions, webhooks, portal)
-Emails        Resend (transactional)
+Emails        React Email + Resend (transactional)
 Monitoring    Sentry (error tracking + tracing)
 Tracing       LangSmith (EU endpoint)
 Search        Tavily API (docs search)
@@ -142,14 +147,19 @@ app/
 │   └── agents.tsx                → Centralized agent config
 ├── context/
 │   └── ThemeContext.tsx          → Theme provider
+├── emails/
+│   ├── WelcomeEmail.tsx          → React Email welcome template
+│   ├── QuotaAlertEmail.tsx       → React Email quota alert template
+│   └── CancellationEmail.tsx     → React Email cancellation template
 ├── hooks/
 │   ├── useAgent.ts
 │   ├── useConversations.ts
 │   ├── useTokenStats.ts
-│   └── useBilling.ts             → Subscription + quota data (free & paid)
+│   ├── useBilling.ts             → Subscription + quota data (free & paid)
+│   └── useToast.ts               → Toast stack with auto-dismiss
 ├── lib/
 │   ├── stripe.ts                 → Stripe singleton
-│   ├── email.ts                  → Resend email functions
+│   ├── email.ts                  → Resend send functions (render via React Email)
 │   ├── plans.ts                  → Plan config + FREE_AGENTS + agent ID mapping
 │   ├── auth.ts                   → NextAuth config
 │   ├── mongodb.ts
@@ -168,7 +178,8 @@ app/
 └── components/
     ├── layout/                   → Topbar (plan badge), Sidebar (agent lock + upgrade popup)
     ├── agents/                   → AgentCard (lock icon), AgentChip
-    └── chat/                     → ChatMessages, ChatInput, MessageBubble
+    ├── chat/                     → ChatMessages (+ export), ChatInput, MessageBubble
+    └── ui/                       → Toast, OnboardingModal
 ```
 
 ---
@@ -344,10 +355,13 @@ stripe listen --forward-to localhost:3000/api/stripe/webhook
 - [x] RGPD account deletion
 - [x] Mobile responsive layout
 - [x] Billing dashboard (free + paid)
+- [x] React Email for transactional email templates
+- [x] Onboarding modal on first login
+- [x] In-app quota toast alert (80%)
+- [x] Export conversation as Markdown
 - [ ] Custom domain
 - [ ] Multi-language FR/EN (next-intl)
 - [ ] Claude Opus on Orchestrator for complex pipelines
-- [ ] React Email for transactional email templates
 
 ---
 
