@@ -13,6 +13,7 @@ import Sidebar from './components/layout/Sidebar';
 import ChatMessages from './components/chat/ChatMessages';
 import ChatInput from './components/chat/ChatInput';
 import SettingsPanel from './components/layout/SettingsPanel';
+import OnboardingModal from './components/ui/OnboardingModal';
 
 interface FileContent {
   name: string;
@@ -168,6 +169,7 @@ export default function Home() {
       </div>
 
       <SettingsPanel isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <OnboardingModal />
     </div>
   );
 }
