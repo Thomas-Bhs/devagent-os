@@ -21,6 +21,7 @@ export async function GET() {
         cancelAtPeriodEnd: false,
         requestsUsed: usage.requestsUsed,
         requestsLimit: 999999,
+        isAdmin: true,
       });
     }
 
@@ -38,6 +39,7 @@ export async function GET() {
         cancelAtPeriodEnd: false,
         requestsUsed: usage.requestsUsed,
         requestsLimit: usage.requestsLimit,
+        isAdmin: false,
       });
     }
 
@@ -50,6 +52,7 @@ export async function GET() {
       cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
       requestsUsed: usage.requestsUsed,
       requestsLimit: usage.requestsLimit,
+      isAdmin: false,
     });
   } catch (error) {
     console.error('[billing] Error:', error);
