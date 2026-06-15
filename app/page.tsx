@@ -6,6 +6,7 @@ import { useTheme } from './context/ThemeContext';
 import { useConversations } from './hooks/useConversations';
 import { useAgent } from './hooks/useAgent';
 import { useBilling } from './hooks/useBilling';
+import { useToast } from './hooks/useToast';
 import { getAllowedAgentIds } from './lib/plans';
 import { AGENTS } from './config/agents';
 import Topbar from './components/layout/Topbar';
@@ -14,6 +15,7 @@ import ChatMessages from './components/chat/ChatMessages';
 import ChatInput from './components/chat/ChatInput';
 import SettingsPanel from './components/layout/SettingsPanel';
 import OnboardingModal from './components/ui/OnboardingModal';
+import Toast from './components/ui/Toast';
 
 interface FileContent {
   name: string;
@@ -23,8 +25,25 @@ interface FileContent {
 export default function Home() {
   const { t } = useTheme();
   const { billing, loading: billingLoading } = useBilling();
-  // null = all unlocked (admin bypass); during load keep null to avoid flash
   const allowedAgentIds = billingLoading ? null : getAllowedAgentIds(billing?.plan ?? null);
+  const { toasts, addToast, dismissToast } = useToast();
+
+  useEffect(() => {
+    if (!billing) return;
+    const percent = billing.requestsUsed / billing.requestsLimit;
+    if (percent < 0.8) return;
+    const key = `quota_alert_${billing.plan}_${new Date().toISOString().slice(0, 7)}`;
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, '1');
+    const isFree = billing.plan === 'free';
+    addToast({
+      type: 'warning',
+      message: isFree
+        ? `You've used ${Math.round(percent * 100)}% of your free trial (${billing.requestsUsed}/${billing.requestsLimit} requests).`
+        : `You've used ${Math.round(percent * 100)}% of your monthly quota (${billing.requestsUsed}/${billing.requestsLimit} requests).`,
+      action: { label: isFree ? 'View plans' : 'Upgrade plan', href: '/pricing' },
+    });
+  }, [billing]);
   const { selectedAgentId, setSelectedAgentId, selectedAgent, agentRoute } = useAgent();
   const {
     conversations,
@@ -170,6 +189,7 @@ export default function Home() {
 
       <SettingsPanel isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
       <OnboardingModal />
+      <Toast toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 }
