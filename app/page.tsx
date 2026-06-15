@@ -14,6 +14,7 @@ import Sidebar from './components/layout/Sidebar';
 import ChatMessages from './components/chat/ChatMessages';
 import ChatInput from './components/chat/ChatInput';
 import SettingsPanel from './components/layout/SettingsPanel';
+import OnboardingModal from './components/ui/OnboardingModal';
 import Toast from './components/ui/Toast';
 
 interface FileContent {
@@ -187,6 +188,7 @@ export default function Home() {
       </div>
 
       <SettingsPanel isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <OnboardingModal />
       <Toast toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
