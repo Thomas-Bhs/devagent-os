@@ -136,6 +136,7 @@ export default function Home() {
         onSettings={() => setIsSettingsOpen(true)}
         onMenuToggle={() => setIsSidebarOpen(true)}
         planId={billing?.plan ?? null}
+        isAdmin={billing?.isAdmin ?? false}
       />
 
       <div className='flex flex-1 overflow-hidden'>

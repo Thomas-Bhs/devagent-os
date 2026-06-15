@@ -10,6 +10,7 @@ interface BillingData {
   cancelAtPeriodEnd: boolean;
   requestsUsed: number;
   requestsLimit: number;
+  isAdmin: boolean;
 }
 
 interface UseBillingReturn {

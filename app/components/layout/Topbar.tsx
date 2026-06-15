@@ -21,6 +21,7 @@ interface TopbarProps {
   onSettings: () => void;
   onMenuToggle: () => void;
   planId?: string | null;
+  isAdmin?: boolean;
 }
 
 const PLAN_BADGE: Record<string, { label: string; bg: string; color: string }> = {
@@ -30,13 +31,14 @@ const PLAN_BADGE: Record<string, { label: string; bg: string; color: string }> =
   expert: { label: 'Expert', bg: '#dcfce7', color: '#15803d' },
 };
 
-export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle, planId }: TopbarProps) {
+export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle, planId, isAdmin = false }: TopbarProps) {
   const { t, theme, setTheme } = useTheme();
   const isFallout = !!t.labelPrefix;
   const { data: session } = useSession();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -44,6 +46,7 @@ export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpen(false);
         setSettingsOpen(false);
+        setContactOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -137,17 +140,19 @@ export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle
         </div>
       </div>
 
-      {/* RIGHT — Gauge + Clear + Avatar menu */}
+      {/* RIGHT — Gauge (admin only) + Clear + Avatar menu */}
       <div className='flex items-center gap-3'>
-        {/* Settings gauge */}
-        <button
-          onClick={onSettings}
-          aria-label='Open settings'
-          className='w-8 h-8 flex items-center justify-center rounded-xl transition-colors'
-          style={{ color: t.textSecondary }}
-        >
-          <Gauge size={15} />
-        </button>
+        {/* Analytics — admin only */}
+        {isAdmin && (
+          <button
+            onClick={onSettings}
+            aria-label='Open analytics'
+            className='w-8 h-8 flex items-center justify-center rounded-xl transition-colors'
+            style={{ color: t.textSecondary }}
+          >
+            <Gauge size={15} />
+          </button>
+        )}
 
         {/* Clear */}
         <button
@@ -221,10 +226,7 @@ export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle
 
                 {/* Pricing */}
                 <button
-                  onClick={() => {
-                    setMenuOpen(false);
-                    router.push('/pricing');
-                  }}
+                  onClick={() => { setMenuOpen(false); router.push('/pricing'); }}
                   className='w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors hover:opacity-80'
                   style={{ color: t.text, fontFamily: t.fontFamily }}
                 >
@@ -234,10 +236,7 @@ export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle
 
                 {/* Billing */}
                 <button
-                  onClick={() => {
-                    setMenuOpen(false);
-                    router.push('/billing');
-                  }}
+                  onClick={() => { setMenuOpen(false); router.push('/billing'); }}
                   className='w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors hover:opacity-80'
                   style={{ color: t.text, fontFamily: t.fontFamily }}
                 >
@@ -267,7 +266,7 @@ export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle
                 {/* Settings — Theme + Delete account */}
                 <div>
                   <button
-                    onClick={() => setSettingsOpen(!settingsOpen)}
+                    onClick={() => { setSettingsOpen(!settingsOpen); setContactOpen(false); }}
                     className='w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors hover:opacity-80'
                     style={{ color: t.text, fontFamily: t.fontFamily }}
                   >
@@ -278,10 +277,8 @@ export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle
                     <span style={{ color: t.textSecondary }}>{settingsOpen ? '▲' : '▼'}</span>
                   </button>
 
-                  {/* Submenu */}
                   {settingsOpen && (
                     <div className='px-4 pb-2' style={{ backgroundColor: t.subtleBg }}>
-                      {/* Theme */}
                       <p
                         className='text-[10px] uppercase font-semibold pt-2 pb-1.5'
                         style={{ color: t.textSecondary, fontFamily: t.fontFamily }}
@@ -291,11 +288,7 @@ export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle
                       {themes.map((th) => (
                         <button
                           key={th.id}
-                          onClick={() => {
-                            setTheme(th.id);
-                            setMenuOpen(false);
-                            setSettingsOpen(false);
-                          }}
+                          onClick={() => { setTheme(th.id); setMenuOpen(false); setSettingsOpen(false); }}
                           className='w-full flex items-center gap-2 py-1.5 text-sm transition-colors'
                           style={{
                             color: theme === th.id ? t.accent : t.textSecondary,
@@ -307,10 +300,8 @@ export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle
                         </button>
                       ))}
 
-                      {/* Séparateur */}
                       <div className='h-px my-2' style={{ backgroundColor: t.border }} />
 
-                      {/* Delete account */}
                       <button
                         onClick={async () => {
                           setMenuOpen(false);
@@ -328,6 +319,62 @@ export default function Topbar({ activeAgents, onClear, onSettings, onMenuToggle
                         <span>🗑️</span>
                         <span>{isFallout ? 'DELETE_ACCOUNT_' : 'Delete account'}</span>
                       </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Contact */}
+                <div>
+                  <button
+                    onClick={() => { setContactOpen(!contactOpen); setSettingsOpen(false); }}
+                    className='w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors hover:opacity-80'
+                    style={{ color: t.text, fontFamily: t.fontFamily }}
+                  >
+                    <div className='flex items-center gap-3'>
+                      <span>👤</span>
+                      <span>{isFallout ? 'CONTACT_' : 'Contact'}</span>
+                    </div>
+                    <span style={{ color: t.textSecondary }}>{contactOpen ? '▲' : '▼'}</span>
+                  </button>
+
+                  {contactOpen && (
+                    <div className='px-4 pb-3' style={{ backgroundColor: t.subtleBg }}>
+                      <div className='flex items-center gap-2.5 pt-3 pb-2.5 border-b' style={{ borderColor: t.border }}>
+                        <Image
+                          src='/hanko_T_kiku.svg'
+                          alt='Thomas Bourc his logo'
+                          width={28}
+                          height={28}
+                          className='rounded'
+                        />
+                        <div>
+                          <p className='text-xs font-semibold' style={{ color: t.text, fontFamily: t.fontFamily }}>
+                            Thomas Bourc his
+                          </p>
+                          <p className='text-[10px]' style={{ color: t.textSecondary, fontFamily: t.fontFamily }}>
+                            Fullstack Developer
+                          </p>
+                        </div>
+                      </div>
+                      <div className='flex flex-col gap-0.5 pt-2'>
+                        {[
+                          { label: 'Portfolio', href: 'https://portfolio-thomas-bourchis.vercel.app', icon: '🌐' },
+                          { label: 'GitHub', href: 'https://github.com/Thomas-Bhs', icon: '⌥' },
+                          { label: 'Email', href: 'mailto:bourchisthomas@gmail.com', icon: '✉️' },
+                        ].map(({ label, href, icon }) => (
+                          <a
+                            key={label}
+                            href={href}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='flex items-center gap-2 py-1.5 text-xs transition-opacity hover:opacity-70'
+                            style={{ color: t.textSecondary, fontFamily: t.fontFamily }}
+                          >
+                            <span>{icon}</span>
+                            <span>{isFallout ? `${label.toUpperCase()}_` : label}</span>
+                          </a>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
