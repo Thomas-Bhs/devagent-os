@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useTheme } from '@/app/context/ThemeContext';
 import { AGENTS } from '@/app/config/agents';
 import { FREE_AGENTS } from '@/app/lib/plans';
@@ -10,7 +9,6 @@ const STORAGE_KEY = 'devagent_onboarded';
 
 export default function OnboardingModal() {
   const { t } = useTheme();
-  const router = useRouter();
   const [visible, setVisible] = useState(false);
   const [step, setStep] = useState(0);
   const isFallout = !!t.labelPrefix;
@@ -96,29 +94,26 @@ export default function OnboardingModal() {
           </div>
         )}
 
-        {/* Step 1 — Agents */}
+        {/* Step 1 — Agents overview */}
         {step === 1 && (
-          <div className='px-6 py-8'>
+          <div className='px-6 pb-8 pt-5'>
             <h2 className='text-xl font-bold mb-1' style={{ color: t.text, fontFamily: t.fontFamily }}>
-              {isFallout ? '>> YOUR AGENTS_' : 'Your agents'}
+              {isFallout ? '>> MEET YOUR AGENTS_' : 'Meet your agents'}
             </h2>
-            <p className='text-sm mb-5' style={{ color: t.textSecondary, fontFamily: t.fontFamily }}>
+            <p className='text-sm mb-4' style={{ color: t.textSecondary, fontFamily: t.fontFamily }}>
               {isFallout
-                ? 'EACH AGENT IS SPECIALIZED. CHOOSE THE RIGHT ONE FOR YOUR TASK.'
-                : 'Each agent is specialized. Pick the right one for your task.'}
+                ? 'EACH AGENT IS SPECIALIZED FOR A SPECIFIC TASK.'
+                : 'Each agent is specialized for a specific development task.'}
             </p>
 
-            <div className='flex flex-col gap-2 mb-6'>
+            <div className='flex flex-col gap-2 mb-5 max-h-72 overflow-y-auto pr-1'>
               {AGENTS.map((agent) => {
                 const isFree = FREE_AGENTS.includes(agent.id);
                 return (
                   <div
                     key={agent.id}
                     className='flex items-center gap-3 px-4 py-3 rounded-xl'
-                    style={{
-                      backgroundColor: t.cardBg,
-                      border: `1px solid ${t.cardBorder}`,
-                    }}
+                    style={{ backgroundColor: t.cardBg, border: `1px solid ${t.cardBorder}` }}
                   >
                     <div
                       className='w-8 h-8 rounded-lg flex items-center justify-center shrink-0'
@@ -127,50 +122,37 @@ export default function OnboardingModal() {
                       {agent.icon}
                     </div>
                     <div className='flex-1 min-w-0'>
-                      <p className='text-sm font-semibold' style={{ color: t.text, fontFamily: t.fontFamily }}>
-                        {isFallout ? agent.name.toUpperCase() : agent.name}
-                      </p>
-                      <p className='text-xs' style={{ color: t.textSecondary, fontFamily: t.fontFamily }}>
+                      <div className='flex items-center gap-2'>
+                        <p className='text-sm font-semibold' style={{ color: t.text, fontFamily: t.fontFamily }}>
+                          {isFallout ? agent.name.toUpperCase() : agent.name}
+                        </p>
+                        <span
+                          className='text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase'
+                          style={
+                            isFree
+                              ? { backgroundColor: '#dcfce7', color: '#15803d' }
+                              : { backgroundColor: '#f3f4f6', color: '#6b7280' }
+                          }
+                        >
+                          {isFree ? 'Free' : 'Paid'}
+                        </span>
+                      </div>
+                      <p className='text-xs mt-0.5' style={{ color: t.textSecondary, fontFamily: t.fontFamily }}>
                         {agent.description}
                       </p>
                     </div>
-                    <span
-                      className='text-[10px] font-bold px-2 py-0.5 rounded-full uppercase shrink-0'
-                      style={
-                        isFree
-                          ? { backgroundColor: '#dcfce7', color: '#15803d' }
-                          : { backgroundColor: '#f3f4f6', color: '#6b7280' }
-                      }
-                    >
-                      {isFree ? 'Free' : 'Paid'}
-                    </span>
                   </div>
                 );
               })}
             </div>
 
-            <div className='flex gap-3'>
-              <button
-                onClick={() => router.push('/pricing')}
-                className='flex-1 py-3 rounded-xl font-semibold text-sm'
-                style={{
-                  backgroundColor: t.subtleBg,
-                  color: t.text,
-                  border: `1px solid ${t.cardBorder}`,
-                  fontFamily: t.fontFamily,
-                }}
-                onMouseDown={dismiss}
-              >
-                {isFallout ? 'VIEW PLANS_' : 'View plans'}
-              </button>
-              <button
-                onClick={dismiss}
-                className='flex-1 py-3 rounded-xl font-semibold text-sm'
-                style={{ backgroundColor: t.accent, color: t.bg, fontFamily: t.fontFamily }}
-              >
-                {isFallout ? "LET'S GO_" : "Let's go →"}
-              </button>
-            </div>
+            <button
+              onClick={dismiss}
+              className='w-full py-3 rounded-xl font-semibold text-sm'
+              style={{ backgroundColor: t.accent, color: t.bg, fontFamily: t.fontFamily }}
+            >
+              {isFallout ? "LET'S GO_" : "Let's go →"}
+            </button>
           </div>
         )}
       </div>
