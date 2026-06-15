@@ -2,12 +2,37 @@ import { useEffect, useRef } from 'react';
 import { Message } from '@ai-sdk/react';
 import { useTheme } from '@/app/context/ThemeContext';
 import { formatLabel } from '@/app/lib/theme';
+import { getAgentById } from '@/app/config/agents';
 import MessageBubble from './MessageBubble';
 
 interface ChatMessagesProps {
   messages: Message[];
   isLoading: boolean;
   agentId: string;
+}
+
+function exportToMarkdown(messages: Message[], agentId: string) {
+  const agent = getAgentById(agentId);
+  const agentName = agent?.name ?? agentId;
+  const date = new Date().toISOString().slice(0, 10);
+
+  const lines = [
+    `# DevAgent OS — ${agentName} — ${date}`,
+    '',
+    ...messages.map((m) => {
+      const role = m.role === 'user' ? '**You**' : `**${agentName}**`;
+      const content = typeof m.content === 'string' ? m.content : '';
+      return `${role}\n\n${content}\n\n---`;
+    }),
+  ];
+
+  const blob = new Blob([lines.join('\n')], { type: 'text/markdown' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `devagent-${agentId}-${date}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export default function ChatMessages({ messages, isLoading, agentId }: ChatMessagesProps) {
@@ -91,6 +116,19 @@ export default function ChatMessages({ messages, isLoading, agentId }: ChatMessa
 
   return (
     <div className='flex-1 overflow-y-auto px-6 py-6 space-y-5'>
+      <div className='flex justify-end'>
+        <button
+          onClick={() => exportToMarkdown(messages, agentId)}
+          className='text-xs px-3 py-1.5 rounded-lg transition-opacity hover:opacity-70 flex items-center gap-1.5'
+          style={{ color: t.textSecondary, border: `1px solid ${t.border}`, fontFamily: t.fontFamily }}
+          title='Export as Markdown'
+        >
+          <svg width='12' height='12' viewBox='0 0 12 12' fill='none'>
+            <path d='M6 1v7M3 5l3 3 3-3M1 10h10' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round' />
+          </svg>
+          {t.labelPrefix ? 'EXPORT_' : 'Export'}
+        </button>
+      </div>
       {messages.map((m) => (
         <MessageBubble
           key={m.id}
